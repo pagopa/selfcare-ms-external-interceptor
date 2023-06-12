@@ -1,4 +1,4 @@
-# Default values for selfcare-ms-onboarding-interceptor.
+# Default values for selfcare-ms-external-interceptor.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -14,7 +14,7 @@ image:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: "ms-onboarding-interceptor"
+fullnameOverride: "ms-external-interceptor"
 
 containers:
   portNumber: 8080
@@ -51,7 +51,7 @@ ingress:
   hosts:
     - host: ""
       paths:
-        - path: /ms-onboarding-interceptor/(.*)
+        - path: /ms-external-interceptor/(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
