@@ -7,7 +7,7 @@ namespace: selc
 replicaCount: 1
 
 image:
-  repository: selcdacr.azurecr.io/selfcaremsonboardinginterceptor
+  repository: selcdacr.azurecr.io/selfcaremsexternalinterceptor
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"

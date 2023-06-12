@@ -1,5 +1,5 @@
 image:
-  repository: selcpacr.azurecr.io/selfcaremsonboardinginterceptor
+  repository: selcpacr.azurecr.io/selfcaremsexternalinterceptor
   pullPolicy: Always # TODO change me in IfNotPresent when each build will have a different tag
   tag: 1.0-SNAPSHOT
 

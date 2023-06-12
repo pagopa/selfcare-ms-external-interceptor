@@ -1,5 +1,5 @@
 image:
-  repository: selcdacr.azurecr.io/selfcaremsonboardinginterceptor
+  repository: selcdacr.azurecr.io/selfcaremsexternalinterceptor
 
 ingress:
   annotations:
