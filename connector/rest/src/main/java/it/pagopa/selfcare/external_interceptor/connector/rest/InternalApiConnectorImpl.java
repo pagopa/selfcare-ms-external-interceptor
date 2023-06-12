@@ -2,8 +2,9 @@ package it.pagopa.selfcare.external_interceptor.connector.rest;
 
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.CompanyInformations;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.UserToSend;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UserResponse;
@@ -38,7 +39,6 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         coreInstitution.setTaxCode(partyInstitutionResponse.getTaxCode());
         coreInstitution.setOrigin(partyInstitutionResponse.getOrigin());
         coreInstitution.setInstitutionType(partyInstitutionResponse.getInstitutionType());
-        coreInstitution.setAttributes(partyInstitutionResponse.getAttributes());
         coreInstitution.setPaymentServiceProvider(partyInstitutionResponse.getPaymentServiceProvider());
         coreInstitution.setDataProtectionOfficer(partyInstitutionResponse.getDataProtectionOfficer());
         coreInstitution.setGeographicTaxonomies(partyInstitutionResponse.getGeographicTaxonomies());
@@ -47,20 +47,18 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         companyInformations.setShareCapital(partyInstitutionResponse.getShareCapital());
         companyInformations.setBusinessRegisterPlace(partyInstitutionResponse.getBusinessRegisterPlace());
         coreInstitution.setCompanyInformations(companyInformations);
-        AssistanceContacts assistanceContacts = new AssistanceContacts();
-        assistanceContacts.setSupportEmail(partyInstitutionResponse.getSupportEmail());
-        assistanceContacts.setSupportPhone(partyInstitutionResponse.getSupportPhone());
-        coreInstitution.setAssistanceContacts(assistanceContacts);
         return coreInstitution;
     };
 
-    private Function<UserResponse, UserToSend> USER_RESPONSE_TO_USER = userResponse -> {
-        UserToSend user = new UserToSend();
+    private Function<UserResponse, User> USER_RESPONSE_TO_USER = userResponse -> {
+        User user = new User();
+        user.setId(userResponse.getId());
         user.setName(userResponse.getName());
         user.setSurname(userResponse.getSurname());
         user.setTaxCode(userResponse.getFiscalCode());
         user.setEmail(userResponse.getEmail());
         user.setRole(userResponse.getRole());
+        user.setRoles(userResponse.getRoles());
         return user;
     };
 
@@ -69,15 +67,6 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         this.restClient = restClient;
     }
 
-    @Override
-    public void autoApprovalOnboarding(String externalInstitutionId, String productId, AutoApprovalOnboardingRequest request) {
-        log.trace("autoApprovalOnboarding start");
-        log.debug("autoApprovalOnboarding externalId = {}, productId = {}, request = {}", externalInstitutionId, productId, request);
-        Assert.hasText(externalInstitutionId, EXTERNAL_ID_IS_REQUIRED);
-        Assert.hasText(productId, PRODUCT_ID_IS_REQUIRED);
-        restClient.autoApprovalOnboarding(externalInstitutionId, productId, request);
-        log.trace("autoApprovalOnboarding end");
-    }
 
     @Override
     public Institution getInstitutionById(String institutionId) {
@@ -104,15 +93,6 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         return user;
     }
 
-    @Override
-    public Product getProduct(String productId) {
-        log.trace("getProduct start");
-        log.debug("getProduct productId = {}", productId);
-        Product product = restClient.getProduct(productId);
-        log.debug("getProduct product = {}", product);
-        log.trace("getProduct end");
-        return product;
-    }
 
 
 }

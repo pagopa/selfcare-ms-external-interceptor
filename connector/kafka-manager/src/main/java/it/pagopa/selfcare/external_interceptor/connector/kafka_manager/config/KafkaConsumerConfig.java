@@ -23,33 +23,33 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConsumerConfig {
 
-    @Value(value = "${kafka-manager.onboarding-interceptor.clientId}")
+    @Value(value = "${kafka-manager.external-interceptor.clientId}")
     private String clientId;
-    @Value(value = "${kafka-manager.onboarding-interceptor.groupId}")
+    @Value(value = "${kafka-manager.external-interceptor.groupId}")
     private String groupId;
-    @Value(value = "${kafka-manager.onboarding-interceptor.bootstrapAddress}")
+    @Value(value = "${kafka-manager.external-interceptor.bootstrapAddress}")
     private String bootstrapAddress;
-    @Value(value = "${kafka-manager.onboarding-interceptor.auto-offset-reset}")
+    @Value(value = "${kafka-manager.external-interceptor.auto-offset-reset}")
     private String autoOffsetReset;
-    @Value(value = "${kafka-manager.onboarding-interceptor.security-protocol}")
+    @Value(value = "${kafka-manager.external-interceptor.security-protocol}")
     private String securityProtocol;
-    @Value(value = "${kafka-manager.onboarding-interceptor.sasl-mechanism}")
+    @Value(value = "${kafka-manager.external-interceptor.sasl-mechanism}")
     private String saslMechanism;
-    @Value(value = "${kafka-manager.onboarding-interceptor.sasl-config}")
+    @Value(value = "${kafka-manager.external-interceptor.sasl-config}")
     private String saslConfig;
-    @Value(value = "${kafka-manager.onboarding-interceptor.consumer-concurrency}")
+    @Value(value = "${kafka-manager.external-interceptor.consumer-concurrency}")
     private int consumerConcurrency;
-    @Value(value = "${kafka-manager.onboarding-interceptor.max-poll.records}")
+    @Value(value = "${kafka-manager.external-interceptor.max-poll.records}")
     private int maxPollRecords;
-    @Value(value = "${kafka-manager.onboarding-interceptor.interval}")
+    @Value(value = "${kafka-manager.external-interceptor.interval}")
     private int maxPollInterval;
-    @Value(value = "${kafka-manager.onboarding-interceptor.request-timeout-ms}")
+    @Value(value = "${kafka-manager.external-interceptor.request-timeout-ms}")
     private int requestTimeOut;
-    @Value(value = "${kafka-manager.onboarding-interceptor.session-timeout-ms}")
+    @Value(value = "${kafka-manager.external-interceptor.session-timeout-ms}")
     private int sessionTimeOut;
-    @Value(value = "${kafka-manager.onboarding-interceptor.connection-max-idle-ms}")
+    @Value(value = "${kafka-manager.external-interceptor.connection-max-idle-ms}")
     private int connectionMaxIdleTimeOut;
-    @Value(value = "${kafka-manager.onboarding-interceptor.metadata-max-age-ms}")
+    @Value(value = "${kafka-manager.external-interceptor.metadata-max-age-ms}")
     private int metadataMaxAge;
 
 

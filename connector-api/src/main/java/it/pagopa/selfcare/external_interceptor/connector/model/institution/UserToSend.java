@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
+import it.pagopa.selfcare.commons.base.security.PartyRole;
 import lombok.Data;
 
 import java.util.List;
@@ -11,6 +12,6 @@ public class UserToSend {
     private String surname;
     private String taxCode;
     private String email;
-    private String role;
+    private PartyRole role;
     private List<String> roles;
 }

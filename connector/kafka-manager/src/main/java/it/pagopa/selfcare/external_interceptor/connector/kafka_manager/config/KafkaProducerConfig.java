@@ -2,7 +2,6 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -34,7 +33,7 @@ public class KafkaProducerConfig {
     private String securityProtocol;
     @Value(value = "${kafka-manager.external-interceptor.sasl-mechanism}")
     private String saslMechanism;
-    @Value(value = "${kafka-manager.external-interceptor.sasl--producer-config}")
+    @Value(value = "${kafka-manager.external-interceptor.sasl-producer-config}")
     private String saslProducerConfig;
     @Value(value = "${kafka-manager.external-interceptor.consumer-concurrency}")
     private int consumerConcurrency;
