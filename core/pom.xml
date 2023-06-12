@@ -15,12 +15,6 @@
             <groupId>it.pagopa.selfcare</groupId>
             <artifactId>selc-external-interceptor-connector-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>it.pagopa.selfcare</groupId>
-            <artifactId>selc-external-interceptor-connector-api</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
