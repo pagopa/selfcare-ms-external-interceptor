@@ -21,20 +21,18 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.TimeZone;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest(classes = {KafkaInterceptor.class, KafkaConsumerConfig.class})
 @EmbeddedKafka(partitions = 1, controlledShutdown = true)
 @DirtiesContext
 @TestPropertySource(properties = {
-        "onboarding-interceptor.products-allowed-list={'prod-interop':{'prod-interop-coll'}}",
-        "kafka-manager.onboarding-interceptor.topic=sc-contracts",
-        "kafka-manager.onboarding-interceptor.bootstrapAddress=${spring.embedded.kafka.brokers}",
+        "external-interceptor.producer-topics={'prod-fd':'selfcare-fd'}",
+        "kafka-manager.external-interceptor.topic=sc-contracts",
+        "kafka-manager.external-interceptor.bootstrapAddress=${spring.embedded.kafka.brokers}",
         "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "kafka-manager.onboarding-interceptor.auto-offset-reset=earliest",
+        "kafka-manager.external-interceptor.auto-offset-reset=earliest",
         "spring.cloud.stream.kafka.binder.zkNodes=${spring.embedded.zookeeper.connect}",
-        "kafka-manager.onboarding-interceptor.groupId=consumer-test",
-        "kafka-manager.onboarding-interceptor.security-protocol=PLAINTEXT"
+        "kafka-manager.external-interceptor.groupId=consumer-test",
+        "kafka-manager.external-interceptor.security-protocol=PLAINTEXT"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Profile("KafkaInterceptor")

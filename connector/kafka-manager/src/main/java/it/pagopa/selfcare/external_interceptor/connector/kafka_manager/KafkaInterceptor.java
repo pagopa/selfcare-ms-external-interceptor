@@ -35,6 +35,7 @@ public class KafkaInterceptor {
 
     public KafkaInterceptor(InternalApiConnector internalApiConnector,
                             @Value("#{${external-interceptor.producer-topics}}")Map<String, String> producerAllowedTopics){
+        log.info("Initializing {}", KafkaInterceptor.class.getSimpleName());
         this.internalApiConnector = internalApiConnector;
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
     }
