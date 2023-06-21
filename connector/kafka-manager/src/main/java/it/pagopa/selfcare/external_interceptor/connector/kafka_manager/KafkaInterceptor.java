@@ -30,12 +30,13 @@ public class KafkaInterceptor {
 
     private final Optional<Map<String, String>> producerAllowedTopics;
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     public KafkaInterceptor(InternalApiConnector internalApiConnector,
-                            @Value("#{${external-interceptor.producer-topics}}")Map<String, String> producerAllowedTopics){
+                            @Value("#{${external-interceptor.producer-topics}}")Map<String, String> producerAllowedTopics,
+                            KafkaTemplate<String, String> kafkaTemplate){
         log.info("Initializing {}", KafkaInterceptor.class.getSimpleName());
+        this.kafkaTemplate = kafkaTemplate;
         this.internalApiConnector = internalApiConnector;
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
     }
