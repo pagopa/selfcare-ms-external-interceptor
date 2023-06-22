@@ -18,6 +18,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -94,7 +95,7 @@ public class KafkaInterceptor {
 
         InstitutionToSend institution = new InstitutionToSend();
 
-        notificationToSend.setId(inbound.getId());
+        notificationToSend.setId(UUID.randomUUID().toString());
         notificationToSend.setInstitutionId(inbound.getInternalIstitutionID());
         notificationToSend.setProduct(inbound.getProduct());
         notificationToSend.setState(OnboardingStatus.valueOf(inbound.getState()));
@@ -105,6 +106,7 @@ public class KafkaInterceptor {
         notificationToSend.setFileName(inbound.getFileName());
         notificationToSend.setContentType(inbound.getContentType());
 
+        institution.setDescription(inbound.getInstitution().getDescription());
         institution.setAddress(inbound.getInstitution().getAddress());
         institution.setOrigin(inbound.getInstitution().getOrigin());
         institution.setTaxCode(inbound.getInstitution().getTaxCode());
@@ -127,7 +129,7 @@ public class KafkaInterceptor {
         userToSend.setEmail(user.getEmail());
         userToSend.setRoles(user.getRoles());
 
-        notificationToSend.setId(inbound.getId());
+        notificationToSend.setId(UUID.randomUUID().toString());
         notificationToSend.setInstitutionId(inbound.getInternalIstitutionID());
         notificationToSend.setProduct(inbound.getProduct());
         notificationToSend.setOnboardingTokenId(inbound.getOnboardingTokenId());
