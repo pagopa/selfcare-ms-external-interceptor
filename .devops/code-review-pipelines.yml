@@ -28,7 +28,7 @@ steps:
     inputs:
       SonarCloud: '$(SONARCLOUD_SERVICE_CONN)'
       organization: '$(SONARCLOUD_ORG)'
-      projectKey: 'pagopa_selfcare-ms-external-interceptor'
+      scannerMode: Other
       extraProperties: |
         sonar.projectKey=$(SONARCLOUD_PROJECT_KEY)
         sonar.projectName=$(SONARCLOUD_PROJECT_NAME)
