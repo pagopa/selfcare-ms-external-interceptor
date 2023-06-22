@@ -10,62 +10,38 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
-import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.config.KafkaConsumerConfig;
-import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.config.KafkaProducerConfig;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
 
-@SpringBootTest(classes = {KafkaInterceptor.class, KafkaConsumerConfig.class, KafkaProducerConfig.class})
-@EmbeddedKafka(partitions = 1, controlledShutdown = true)
-@DirtiesContext
-@TestPropertySource(properties = {
-        "external-interceptor.producer-topics={'prod-fd':'selfcare-fd'}",
-        "kafka-manager.external-interceptor.read-topic=sc-contracts",
-        "kafka-manager.external-interceptor.bootstrapAddress=${spring.embedded.kafka.brokers}",
-        "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "kafka-manager.external-interceptor.auto-offset-reset=earliest",
-        "spring.cloud.stream.kafka.binder.zkNodes=${spring.embedded.zookeeper.connect}",
-        "kafka-manager.external-interceptor.groupId=consumer-test",
-        "kafka-manager.external-interceptor.security-protocol=PLAINTEXT"
-})
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Profile("KafkaInterceptor")
 @ContextConfiguration(classes = {KafkaInterceptorTest.Config.class})
-class KafkaInterceptorTest {
+public class KafkaInterceptorTest {
+
     public static class Config {
         @Bean
         @Primary
@@ -83,49 +59,80 @@ class KafkaInterceptorTest {
             return mapper;
         }
     }
-    @Autowired
-    private ObjectMapper mapper;
-    @SpyBean
+
+    @Mock
+    private ListenableFutureCallback<SendResult<String, String>> mockProducerCallback;
     private KafkaInterceptor interceptor;
-    @MockBean
     private InternalApiConnector apiConnector;
-
-    @MockBean
     private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
-    private EmbeddedKafkaBroker embeddedKafkaBroker;
-    @Captor
-    ArgumentCaptor<ConsumerRecord<String, String>> notificationArgumentCaptor;
-
     private ListenableFuture mockFuture;
-    private SendResult<String, String> mockSendResult;
-    private Producer<String, String> producer;
-    public KafkaInterceptorTest() {
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.setTimeZone(TimeZone.getDefault());
-    }
+    @Spy
+    private ObjectMapper mapper = new ObjectMapper();
 
+    @Autowired
+    private ObjectMapper objectMapper;
+    private Map<String, String> allowedTopics;
+    private SendResult<String, String> mockSendResult;
 
     @BeforeEach
-    void setUp() throws InterruptedException {
+    void setUp() {
+        openMocks(this);
+        allowedTopics = new HashMap<>();
+        allowedTopics.put("prod-fd", "selfcare-fd");
+        kafkaTemplate = mock(KafkaTemplate.class);
         mockFuture = mock(ListenableFuture.class);
+        apiConnector = mock(InternalApiConnector.class);
+        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate);
         mockSendResult = mock(SendResult.class);
-        Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
-        producer = new DefaultKafkaProducerFactory<String, String>(configs).createProducer();
-        reset(interceptor, apiConnector);
-        Thread.sleep(1000);
+    }
+    public KafkaInterceptorTest(){
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setTimeZone(TimeZone.getDefault());
     }
 
     @Test
-    void interceptKafkaMessage_Ok() throws JsonProcessingException {
+    void testOnSuccess() throws IOException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+
+        when(apiConnector.getInstitutionProductUsers(any(), any())).thenReturn(List.of(mockInstance(new User())));
+
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verify(apiConnector, times(1))
+                .getInstitutionProductUsers(notification.getInternalIstitutionID(), notification.getProduct());
+        verify(kafkaTemplate, times(2)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        verifyNoMoreInteractions(apiConnector);
+    }
+
+    @Test
+    void testOnFailure() {
         //given
         Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -134,19 +141,109 @@ class KafkaInterceptorTest {
         notification.setBilling(billing);
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
-        ListenableFuture<SendResult<String, String>> future = mock(ListenableFuture.class);
-        when(kafkaTemplate.send(any(), any())).thenReturn(future);
+        RuntimeException ex = new RuntimeException("error");
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
         doAnswer(invocationOnMock -> {
             ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onSuccess(mockSendResult);
+            callback.onFailure(ex);
             return null;
-        }).when(future).addCallback(any(ListenableFutureCallback.class));
-
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notification)));
-        producer.flush();
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
         //then
-        verify(interceptor, timeout(1000).times(1))
-                .intercept(notificationArgumentCaptor.capture());
+        verify(apiConnector, times(1))
+                .getInstitutionProductUsers(notification.getInternalIstitutionID(), notification.getProduct());
+        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        verifyNoMoreInteractions(apiConnector);
     }
+
+    @Test
+    void intercept_userNotificationJsonProcessingException() throws JsonProcessingException {
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+        when(apiConnector.getInstitutionProductUsers(any(), any())).thenReturn(List.of(mockInstance(new User())));
+
+        when(mapper.writeValueAsString(any())).thenAnswer(invocationOnMock -> {
+            return objectMapper.writeValueAsString(invocationOnMock.getArgument(0));
+        }).thenThrow(JsonProcessingException.class);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notification.getInternalIstitutionID(), notification.getProduct());
+        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        verifyNoMoreInteractions(apiConnector, kafkaTemplate);
+    }
+
+    @Test
+    void intercept_organizationNotificationJsonProcessingException() throws JsonProcessingException {
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+
+        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verifyNoInteractions(apiConnector, kafkaTemplate);
+    }
+
+    @Test
+    void productNotAllowed(){
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-io");
+        notification.setState("ACTIVE");
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verifyNoInteractions(apiConnector, kafkaTemplate);
+    }
+
+    @Test
+    void productMap_isEmpty(){
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+        allowedTopics = null;
+        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.intercept(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verifyNoInteractions(apiConnector, kafkaTemplate);
+    }
+
+
 }

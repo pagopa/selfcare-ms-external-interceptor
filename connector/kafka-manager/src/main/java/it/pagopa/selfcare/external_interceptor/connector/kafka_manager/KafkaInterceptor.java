@@ -6,7 +6,6 @@ import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnecto
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -24,8 +23,9 @@ import java.util.UUID;
 @Service
 public class KafkaInterceptor {
 
-    @Autowired
-    private ObjectMapper mapper;
+    public static final String NOTIFICATION_CONVERSION_EXCEPTION = "Something went wrong while trying to convert the record";
+
+    private final ObjectMapper mapper;
 
     private final InternalApiConnector internalApiConnector;
 
@@ -33,10 +33,12 @@ public class KafkaInterceptor {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public KafkaInterceptor(InternalApiConnector internalApiConnector,
-                            @Value("#{${external-interceptor.producer-topics}}")Map<String, String> producerAllowedTopics,
-                            KafkaTemplate<String, String> kafkaTemplate){
+    public KafkaInterceptor(ObjectMapper mapper,
+                            InternalApiConnector internalApiConnector,
+                            @Value("#{${external-interceptor.producer-topics}}") Map<String, String> producerAllowedTopics,
+                            KafkaTemplate<String, String> kafkaTemplate) {
         log.info("Initializing {}", KafkaInterceptor.class.getSimpleName());
+        this.mapper = mapper;
         this.kafkaTemplate = kafkaTemplate;
         this.internalApiConnector = internalApiConnector;
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
@@ -50,7 +52,7 @@ public class KafkaInterceptor {
 
         try {
             notification = mapper.readValue(inboundRecord.value(), Notification.class);
-            if(producerAllowedTopics.isPresent() && producerAllowedTopics.get().containsKey(notification.getProduct())){
+            if (producerAllowedTopics.isPresent() && producerAllowedTopics.get().containsKey(notification.getProduct())) {
                 NotificationToSend notificationToSend = createInstitutionNotification(notification);
                 notificationToSend.setType(NotificationType.ADD_INSTITUTE);
                 String institutionNotification = mapper.writeValueAsString(notificationToSend);
@@ -65,16 +67,16 @@ public class KafkaInterceptor {
                         String userNotificationMessage = mapper.writeValueAsString(userNotification);
                         sendNotification(userNotificationMessage, topic, finalNotification.getOnboardingTokenId());
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
                     }
                 });
             }
-        } catch (Exception e) {
-            log.warn("Something went wrong with message processing", e);
+        } catch (JsonProcessingException e) {
+            log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
         }
     }
 
-    private void sendNotification(String message, String topic, String tokenId){
+    private void sendNotification(String message, String topic, String tokenId) {
         ListenableFuture<SendResult<String, String>> future =
                 kafkaTemplate.send(topic, message);
         future.addCallback(new ListenableFutureCallback<>() {
@@ -89,8 +91,8 @@ public class KafkaInterceptor {
             }
         });
     }
-    
-    private NotificationToSend createInstitutionNotification(Notification inbound){
+
+    private NotificationToSend createInstitutionNotification(Notification inbound) {
         NotificationToSend notificationToSend = new NotificationToSend();
 
         InstitutionToSend institution = new InstitutionToSend();
@@ -118,7 +120,7 @@ public class KafkaInterceptor {
         return notificationToSend;
     }
 
-    private NotificationToSend createUserNotification(Notification inbound, User user){
+    private NotificationToSend createUserNotification(Notification inbound, User user) {
         NotificationToSend notificationToSend = new NotificationToSend();
 
         UserToSend userToSend = new UserToSend();
