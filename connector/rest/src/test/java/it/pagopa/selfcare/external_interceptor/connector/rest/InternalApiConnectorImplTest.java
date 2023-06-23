@@ -14,11 +14,16 @@ import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UserResponse;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.InstitutionResponseMapper;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.InstitutionResponseMapperImpl;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.UserMapper;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.UserMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
@@ -40,6 +45,12 @@ class InternalApiConnectorImplTest {
 
     @Mock
     private InternalApiRestClient restClientMock;
+
+    @Spy
+    private InstitutionResponseMapper institutionMapper = new InstitutionResponseMapperImpl();
+
+    @Spy
+    private UserMapper userMapper = new UserMapperImpl();
 
     private final ObjectMapper mapper;
 
