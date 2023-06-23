@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class InternalApiConnectorImplTest {
+class InternalApiConnectorImplTest {
 
     @InjectMocks
     private InternalApiConnectorImpl internalApiConnectorMock;

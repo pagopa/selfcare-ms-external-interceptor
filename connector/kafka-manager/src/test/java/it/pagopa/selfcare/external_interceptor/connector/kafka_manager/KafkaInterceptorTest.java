@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @ContextConfiguration(classes = {KafkaInterceptorTest.Config.class})
-public class KafkaInterceptorTest {
+class KafkaInterceptorTest {
 
     public static class Config {
         @Bean
