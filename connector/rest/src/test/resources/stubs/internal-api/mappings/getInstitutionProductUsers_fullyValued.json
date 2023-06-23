@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/external/internal/v1/institutions/institutionId1/products/productId1/users"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": [
+      {
+        "name": "nameExample",
+        "surname": "surnameExample",
+        "fiscalCode": "fiscalCodeExample",
+        "role": "MANAGER",
+        "email": "email@example.com",
+        "roles": [
+          "role1Example"
+        ]
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

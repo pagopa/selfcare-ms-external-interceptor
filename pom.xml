@@ -4,23 +4,19 @@
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
-    <groupId>it.pagopa.selfcare</groupId>
-
     <parent>
         <groupId>it.pagopa.selfcare</groupId>
         <artifactId>selc-starter-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
         <!-- lookup parent from repository -->
 
     </parent>
-
     <artifactId>selc-external-interceptor</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>selc-external-interceptor</name>
     <description>Microservice to manage Self Care events for external Products</description>
-
     <properties>
-        <selc-commons.version>2.4.3</selc-commons.version>
+        <selc-commons.version>2.4.4</selc-commons.version>
     </properties>
 
     <dependencyManagement>
@@ -120,5 +116,13 @@
         <module>connector</module>
     </modules>
 
+    <repositories>
+        <repository>
+            <id>selfcare-platform</id>
+            <url>
+                https://pkgs.dev.azure.com/pagopaspa/selfcare-platform-app-projects/_packaging/selfcare-platform/maven/v1
+            </url>
+        </repository>
+    </repositories>
 
 </project>

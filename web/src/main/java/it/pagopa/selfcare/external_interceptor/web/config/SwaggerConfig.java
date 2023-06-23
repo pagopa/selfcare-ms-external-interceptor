@@ -5,12 +5,14 @@ import it.pagopa.selfcare.commons.web.model.Problem;
 import it.pagopa.selfcare.commons.web.swagger.EmailAnnotationSwaggerPluginConfig;
 import it.pagopa.selfcare.commons.web.swagger.ServerSwaggerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.ResponseBuilder;
@@ -104,7 +106,7 @@ class SwaggerConfig {
                         .description(environment.getProperty("swagger.description", "Api and Models"))
                         .version(environment.getProperty("swagger.version", environment.getProperty("spring.application.version")))
                         .build())
-                .select().apis(RequestHandlerSelectors.basePackage("it.pdagopa.selfcare.external_interceptor.web.controller")).build()
+                .select().apis(RequestHandlerSelectors.basePackage("it.pagopa.selfcare.external_interceptor.web.controller")).build()
                 .tags(new Tag("name", environment.getProperty("swagger.name.api.description")))//TODO change Name
                 .directModelSubstitute(LocalTime.class, String.class)
                 .forCodeGeneration(true)
