@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/external/internal/v1/institutions/institutionId2/products/productId2/users"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": [
+    ],
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

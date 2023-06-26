@@ -1,7 +1,8 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
-import java.util.List;
+import lombok.Data;
 
+@Data
 public class NotificationToSend {
 
     private String id;
@@ -17,6 +18,6 @@ public class NotificationToSend {
     private String contentType;
     private InstitutionToSend institution;
     private Billing billing;
-    private List<UserToSend> users;
+    private UserToSend user;
 
 }

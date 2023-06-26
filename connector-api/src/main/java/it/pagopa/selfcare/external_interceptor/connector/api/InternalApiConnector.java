@@ -1,9 +1,8 @@
 package it.pagopa.selfcare.external_interceptor.connector.api;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.Institution;
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.User;
-import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
+
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
 
 import java.util.List;
 
