@@ -1,6 +1,6 @@
 image:
   repository: selcuacr.azurecr.io/selfcaremsexternalinterceptor
-  tag: 1.0-SNAPSHOT
+  tag: 0.0.1-SNAPSHOT
 
 ingress:
   annotations:
