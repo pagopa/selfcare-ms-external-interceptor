@@ -127,6 +127,7 @@ public class KafkaInterceptor {
         userToSend.setUserId(user.getId());
         userToSend.setName(user.getName());
         userToSend.setSurname(user.getSurname());
+        userToSend.setTaxCode(user.getTaxCode());
         userToSend.setRole(user.getRole());
         userToSend.setEmail(user.getEmail());
         userToSend.setRoles(user.getRoles());
