@@ -2,13 +2,9 @@ package it.pagopa.selfcare.external_interceptor.web.config;
 
 import com.fasterxml.classmate.TypeResolver;
 import it.pagopa.selfcare.commons.web.model.Problem;
-import it.pagopa.selfcare.commons.web.swagger.EmailAnnotationSwaggerPluginConfig;
-import it.pagopa.selfcare.commons.web.swagger.ServerSwaggerConfig;
+import it.pagopa.selfcare.commons.web.swagger.BaseSwaggerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -29,6 +25,7 @@ import java.util.List;
  * The Class SwaggerConfig.
  */
 @Configuration
+@Import(BaseSwaggerConfig.class)
 class SwaggerConfig {
 
     private static final String AUTH_SCHEMA_NAME = "bearerAuth";
@@ -107,7 +104,7 @@ class SwaggerConfig {
                         .version(environment.getProperty("swagger.version", environment.getProperty("spring.application.version")))
                         .build())
                 .select().apis(RequestHandlerSelectors.basePackage("it.pagopa.selfcare.external_interceptor.web.controller")).build()
-                .tags(new Tag("name", environment.getProperty("swagger.name.api.description")))//TODO change Name
+                .tags(new Tag("interceptor", environment.getProperty("swagger.external-interceptor.api.description")))
                 .directModelSubstitute(LocalTime.class, String.class)
                 .forCodeGeneration(true)
                 .useDefaultResponseMessages(false)
@@ -133,17 +130,4 @@ class SwaggerConfig {
         authorizationScopes[0] = authorizationScope;
         return Collections.singletonList(new SecurityReference(AUTH_SCHEMA_NAME, authorizationScopes));
     }
-
-
-    @Bean
-    public EmailAnnotationSwaggerPluginConfig emailAnnotationPlugin() {
-        return new EmailAnnotationSwaggerPluginConfig();
-    }
-
-
-    @Bean
-    public ServerSwaggerConfig serverSwaggerConfiguration() {
-        return new ServerSwaggerConfig();
-    }
-
 }
