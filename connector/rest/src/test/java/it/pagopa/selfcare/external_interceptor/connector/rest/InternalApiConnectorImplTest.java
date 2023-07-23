@@ -10,7 +10,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.GeographicTaxonomy;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.User;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UserResponse;
