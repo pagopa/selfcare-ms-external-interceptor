@@ -2,7 +2,7 @@ package it.pagopa.selfcare.external_interceptor.connector.api;
 
 
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.User;
 
 import java.util.List;
 

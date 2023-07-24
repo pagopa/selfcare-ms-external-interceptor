@@ -3,7 +3,7 @@ package it.pagopa.selfcare.external_interceptor.connector.rest;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.User;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UserResponse;
