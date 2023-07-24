@@ -72,8 +72,8 @@ public class KafkaInterceptor {
 
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-users-read-topic}", containerFactory = "kafkaUserListenerContainerFactory")
     public void interceptUsers(ConsumerRecord<String, String> inboundRecord){
-        log.trace("KafkaInterceptor intercept start");
-        log.debug("KafKaInterceptor incoming message = {}", inboundRecord);
+        log.trace("KafkaInterceptor intercept users start");
+        log.debug("KafKaInterceptor incoming user message = {}", inboundRecord);
         UserNotification notification = null;
 
         try {
