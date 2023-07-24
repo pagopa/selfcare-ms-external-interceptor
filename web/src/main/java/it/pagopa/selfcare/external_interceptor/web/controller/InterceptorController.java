@@ -28,7 +28,7 @@ public class InterceptorController {
     }
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("acknowledgment/{productId}/message/{messageId}/status/{status}")
+    @PostMapping("/acknowledgment/{productId}/message/{messageId}/status/{status}")
     public void messageAcknowledgment(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId")String productId,
                                       @ApiParam("${swagger.external-interceptor.message.model.id}")@PathVariable("messageId")String messageId,
                                       @ApiParam("${swagger.external-interceptor.message.model.status}")@PathVariable("status") AckStatus status,
@@ -37,8 +37,9 @@ public class InterceptorController {
         log.debug("productId = {}, messageId = {}, status = {}, payload = {}", productId, messageId, status, payload);
         if(AckStatus.ACK.equals(status))
             log.info("[SUCCESSFUL Acknowledgment] - Consumer acknowledged message: {} consumption, for product = {}", messageId, productId);
-        else
+        else {
             log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, cause = {}", messageId, status, productId, payload);
+        }
         log.trace("messageAcknowledgment end");
     }
 
