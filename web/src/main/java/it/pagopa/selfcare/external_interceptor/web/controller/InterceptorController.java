@@ -9,6 +9,7 @@ import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,7 +29,7 @@ public class InterceptorController {
     }
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/acknowledgment/{productId}/message/{messageId}/status/{status}")
+    @PostMapping(value = "/acknowledgment/{productId}/message/{messageId}/status/{status}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void messageAcknowledgment(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId")String productId,
                                       @ApiParam("${swagger.external-interceptor.message.model.id}")@PathVariable("messageId")String messageId,
                                       @ApiParam("${swagger.external-interceptor.message.model.status}")@PathVariable("status") AckStatus status,
