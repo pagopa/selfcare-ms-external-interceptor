@@ -202,6 +202,7 @@ class KafkaInterceptorTest {
         verifyNoInteractions(apiConnector, kafkaTemplate);
     }
 
+
     @Test
     void productNotAllowed(){
         //given
@@ -235,6 +236,39 @@ class KafkaInterceptorTest {
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verifyNoInteractions(apiConnector, kafkaTemplate);
+    }
+    @Test
+    void productNotAllowed_users(){
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-io");
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verifyNoInteractions(apiConnector, kafkaTemplate);
+    }
+
+    @Test
+    void productMap_isEmpty_users(){
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        allowedTopics = null;
+        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
         verifyNoInteractions(apiConnector, kafkaTemplate);
