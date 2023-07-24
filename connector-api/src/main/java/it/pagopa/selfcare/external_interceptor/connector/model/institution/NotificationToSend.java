@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
+import it.pagopa.selfcare.external_interceptor.connector.model.user.UserToSend;
 import lombok.Data;
 
 @Data

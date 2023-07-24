@@ -1,31 +1,31 @@
         package it.pagopa.selfcare.external_interceptor.web.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.selfcare.external_interceptor.core.NameService;
-import org.junit.jupiter.api.Test;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import springfox.documentation.oas.annotations.EnableOpenApi;
+        import com.fasterxml.jackson.databind.ObjectMapper;
+        import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
+        import lombok.extern.slf4j.Slf4j;
+        import org.junit.jupiter.api.Test;
+        import org.springframework.beans.factory.annotation.Autowired;
+        import org.springframework.boot.test.context.SpringBootTest;
+        import org.springframework.boot.test.mock.mockito.MockBean;
+        import org.springframework.context.annotation.ComponentScan;
+        import org.springframework.http.MediaType;
+        import org.springframework.test.context.TestPropertySource;
+        import org.springframework.test.web.servlet.MockMvc;
+        import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+        import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+        import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+        import org.springframework.web.context.WebApplicationContext;
+        import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+        import springfox.documentation.oas.annotations.EnableOpenApi;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+        import java.nio.file.Files;
+        import java.nio.file.Path;
+        import java.nio.file.Paths;
+        import java.util.regex.Matcher;
+        import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+        import static org.junit.jupiter.api.Assertions.assertFalse;
+        import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = {
         SwaggerConfig.class,
@@ -33,13 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 })
 @EnableOpenApi
 @EnableWebMvc
-@ComponentScan(basePackages = "it.pdagopa.selfcare.external_interceptor.web.controller")
+@ComponentScan(basePackages = {"it.pagopa.selfcare.external_interceptor.web.controller", "it.pagopa.selfcare.external_interceptor.web.model"})
 @TestPropertySource(locations = "classpath:config/application.yml")
 @Slf4j
 class SwaggerConfigTest {
 
     @MockBean
-    private NameService nameService;//TODO change Name
+    private InterceptorService interceptorService;
 
     @Autowired
     WebApplicationContext context;
