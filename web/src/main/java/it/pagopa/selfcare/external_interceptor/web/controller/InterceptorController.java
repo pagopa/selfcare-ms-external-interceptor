@@ -33,7 +33,13 @@ public class InterceptorController {
                                       @ApiParam("${swagger.external-interceptor.message.model.id}")@PathVariable("messageId")String messageId,
                                       @ApiParam("${swagger.external-interceptor.message.model.status}")@PathVariable("status") AckStatus status,
                                       @RequestBody @Valid AckPayloadRequest payload){
-
+        log.trace("messageAcknowledgment start");
+        log.debug("productId = {}, messageId = {}, status = {}, payload = {}", productId, messageId, status, payload);
+        if(AckStatus.ACK.equals(status))
+            log.info("[SUCCESSFUL Acknowledgment] - Consumer acknowledged message: {} consumption, for product = {}", messageId, productId);
+        else
+            log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, cause = {}", messageId, status, productId, payload);
+        log.trace("messageAcknowledgment end");
     }
 
 }
