@@ -38,7 +38,7 @@ public class InterceptorController {
         if(AckStatus.ACK.equals(status))
             log.info("[SUCCESSFUL Acknowledgment] - Consumer acknowledged message: {} consumption, for product = {}", messageId, productId);
         else {
-            log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, cause = {}", messageId, status, productId, payload);
+            log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, reason = {}", messageId, status, productId, payload.getMessage());
         }
         log.trace("messageAcknowledgment end");
     }

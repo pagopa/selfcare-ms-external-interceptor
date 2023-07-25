@@ -27,6 +27,6 @@ info:
 
 logging:
   level:
-    it.pagopa.selfcare: ${APP_LOG_LEVEL:DEBUG}
+    it.pagopa.selfcare: ${APP_LOG_LEVEL:ALL}
   pattern:
     additional-info: ",%X{X-Client-Ip:-}]"
