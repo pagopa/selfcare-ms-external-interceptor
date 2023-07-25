@@ -51,7 +51,7 @@ ingress:
   hosts:
     - host: ""
       paths:
-        - path: /ms-external-interceptor/v1(.*)
+        - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls

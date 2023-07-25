@@ -16,3 +16,4 @@ autoscaling:
 
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.selfcare.pagopa.it"
+  MS_EXTERNAL_INTERCEPTOR_LOG_LEVEL: "INFO"
