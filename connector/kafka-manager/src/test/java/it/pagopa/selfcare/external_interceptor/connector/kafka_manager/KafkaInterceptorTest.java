@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
+import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.*;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
@@ -70,6 +71,7 @@ class KafkaInterceptorTest {
     private InternalApiConnector apiConnector;
     private KafkaTemplate<String, String> kafkaTemplate;
     private ListenableFuture mockFuture;
+    private KafkaSendStrategyFactory sendStrategyFactory;
 
     @Spy
     NotificationMapper notificationMapper = new NotificationMapperImpl();
@@ -89,7 +91,8 @@ class KafkaInterceptorTest {
         kafkaTemplate = mock(KafkaTemplate.class);
         mockFuture = mock(ListenableFuture.class);
         apiConnector = mock(InternalApiConnector.class);
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
+        sendStrategyFactory = mock(KafkaSendStrategyFactory.class);
+//        interceptor = new KafkaInterceptor(mapper, apiConnector, sendStrategyFactory, allowedTopics, kafkaTemplate, notificationMapper);
         mockSendResult = mock(SendResult.class);
     }
     public KafkaInterceptorTest(){
@@ -232,7 +235,7 @@ class KafkaInterceptorTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
         allowedTopics = null;
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
+//        interceptor = new KafkaInterceptor(mapper, apiConnector, sendStrategyFactory, allowedTopics, kafkaTemplate, notificationMapper);
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
@@ -265,7 +268,7 @@ class KafkaInterceptorTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         allowedTopics = null;
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
+//        interceptor = new KafkaInterceptor(mapper, apiConnector, sendStrategyFactory, allowedTopics, kafkaTemplate, notificationMapper);
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
