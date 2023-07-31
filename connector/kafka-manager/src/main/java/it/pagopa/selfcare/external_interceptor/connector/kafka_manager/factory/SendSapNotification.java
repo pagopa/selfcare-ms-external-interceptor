@@ -20,13 +20,13 @@ public class SendSapNotification extends KafkaSend {
 
     @Autowired
     private ObjectMapper mapper;
-    @Autowired
-    private NotificationMapper notificationMapper;
 
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
-                               KafkaTemplate<String, String> kafkaTemplate) {
-        super(kafkaTemplate);
+                               KafkaTemplate<String, String> kafkaTemplate,
+                               NotificationMapper notificationMapper,
+                               ObjectMapper mapper) {
+        super(kafkaTemplate, notificationMapper, mapper);
     }
 
     @Override

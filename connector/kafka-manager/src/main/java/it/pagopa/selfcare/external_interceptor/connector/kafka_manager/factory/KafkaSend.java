@@ -3,7 +3,6 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -16,13 +15,13 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @Service
 public abstract class KafkaSend implements KafkaSendService {
     KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
-    NotificationMapper notificationMapper;
-    @Autowired
-    ObjectMapper mapper;
+    final NotificationMapper notificationMapper;
+    final ObjectMapper mapper;
 
-    KafkaSend(KafkaTemplate<String, String> kafkaTemplate){
+    KafkaSend(KafkaTemplate<String, String> kafkaTemplate, NotificationMapper notificationMapper, ObjectMapper mapper){
         this.kafkaTemplate = kafkaTemplate;
+        this.notificationMapper = notificationMapper;
+        this.mapper = mapper;
     }
 
     void sendNotification(String message, String topic, String successLog, String logFailure) {

@@ -90,9 +90,8 @@ class KafkaInterceptorTest {
         allowedTopics.put("prod-fd", "selfcare-fd");
         kafkaTemplate = mock(KafkaTemplate.class);
         mockFuture = mock(ListenableFuture.class);
-        apiConnector = mock(InternalApiConnector.class);
         sendStrategyFactory = mock(KafkaSendStrategyFactory.class);
-//        interceptor = new KafkaInterceptor(mapper, apiConnector, sendStrategyFactory, allowedTopics, kafkaTemplate, notificationMapper);
+        interceptor = new KafkaInterceptor(mapper, sendStrategyFactory);
         mockSendResult = mock(SendResult.class);
     }
     public KafkaInterceptorTest(){

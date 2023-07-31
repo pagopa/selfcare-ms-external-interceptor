@@ -8,10 +8,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaSendStrategyFactoryImpl implements KafkaSendStrategyFactory{
 
-    @Autowired
     private final SendFdNotification fdNotification;
 
-
+    @Autowired
     public KafkaSendStrategyFactoryImpl(SendFdNotification fdNotification) {
         this.fdNotification = fdNotification;
     }

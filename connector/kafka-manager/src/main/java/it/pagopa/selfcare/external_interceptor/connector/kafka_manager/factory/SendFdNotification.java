@@ -1,9 +1,11 @@
 package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationType;
+import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,11 @@ import java.util.Optional;
 public class SendFdNotification extends KafkaSend {
     private final Optional<Map<String, String>> producerAllowedTopics;
 
-    public SendFdNotification(@Value("#{${external-interceptor.producer-topics}}") Map<String, String> producerAllowedTopics,  @Autowired
-    @Qualifier("fdProducer")KafkaTemplate<String, String> kafkaTemplate) {
-        super(kafkaTemplate);
+    public SendFdNotification(@Value("#{${external-interceptor.producer-topics}}") Map<String, String> producerAllowedTopics, @Autowired
+    @Qualifier("fdProducer")KafkaTemplate<String, String> kafkaTemplate,
+                              NotificationMapper notificationMapper,
+                              ObjectMapper mapper) {
+        super(kafkaTemplate, notificationMapper, mapper);
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
     }
 
@@ -47,8 +51,8 @@ public class SendFdNotification extends KafkaSend {
             notificationToSend.setType(NotificationType.getNotificationTypeFromRelationshipState(userNotification.getUser().getRelationshipStatus()));
             String userNotificationToSend = mapper.writeValueAsString(notificationToSend);
             String topic = producerAllowedTopics.get().get(userNotification.getProductId());
-            String logSuccess = String.format("sent notification for user : %s", userNotification.getUser().getUserId());
-            String logFailure = String.format("error during notification sending for user %s: {} ", userNotification.getUser().getUserId());
+            String logSuccess = String.format("sent notification for user : %s, to FD", userNotification.getUser().getUserId());
+            String logFailure = String.format("error during notification sending for user %s: {}, on FD ", userNotification.getUser().getUserId());
             sendNotification(userNotificationToSend, topic, logSuccess, logFailure);
         }
     }
