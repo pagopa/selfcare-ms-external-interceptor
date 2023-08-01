@@ -8,9 +8,12 @@ public class InstitutionToSend {
     private String address;
     private String description;
     private String digitalAddress;
+    private InstitutionType institutionType;
     private String origin;
     private String originId;
     private String taxCode;
     private String zipCode;
+    private String fileName;
+    private String contentType;
 
 }

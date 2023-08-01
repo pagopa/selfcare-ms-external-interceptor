@@ -9,7 +9,6 @@ import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notif
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,12 @@ public class KafkaInterceptor {
     public static final String NOTIFICATION_CONVERSION_EXCEPTION = "Something went wrong while trying to convert the record";
     private final ObjectMapper mapper;
     private final KafkaSendStrategyFactory sendStrategyFactory;
-    @Autowired
-    @Qualifier("sapNotificator")
-    private SendSapNotification sapSendService;
+    private final SendSapNotification sapSendService;
 
-    public KafkaInterceptor(ObjectMapper mapper, KafkaSendStrategyFactory sendStrategyFactory) {
+    public KafkaInterceptor(ObjectMapper mapper, KafkaSendStrategyFactory sendStrategyFactory, @Qualifier("sapNotificator")SendSapNotification sapSendService) {
         this.mapper = mapper;
         this.sendStrategyFactory = sendStrategyFactory;
+        this.sapSendService = sapSendService;
     }
 
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-contracts-read-topic}", containerFactory = "kafkaContractsListenerContainerFactory")

@@ -17,12 +17,15 @@ import java.util.UUID;
 public interface NotificationMapper {
 
     @Mapping(target = "user", source = "inbound.user", qualifiedByName = "toUserToSend")
+    @Mapping(target = "product", source = "productId")
     NotificationToSend createUserNotification(UserNotification inbound);
 
 
     @Mapping(target = "id",  expression = "java(UUID.randomUUID().toString())")
     @Mapping(target = "institutionId", source = "inbound.internalIstitutionID")
     @Mapping(target = "institution", source = "inbound.institution", qualifiedByName = "toInstitutionToSend")
+    @Mapping(target = "institution.fileName", source = "fileName")
+    @Mapping(target = "institution.contentType", source = "contentType")
     NotificationToSend createInstitutionNotification(Notification inbound);
 
 
@@ -35,4 +38,5 @@ public interface NotificationMapper {
 
     @Named("toInstitutionToSend")
     InstitutionToSend toInstitutionToSend(Institution institution);
+
 }
