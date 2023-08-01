@@ -9,37 +9,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.*;
-import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
-import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
+import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
+import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendFdNotification;
+import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendSapNotification;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotify;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
-import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -64,33 +56,26 @@ class KafkaInterceptorTest {
         }
     }
 
-    @Mock
-    private ListenableFutureCallback<SendResult<String, String>> mockProducerCallback;
     private KafkaInterceptor interceptor;
-    private InternalApiConnector apiConnector;
-    private KafkaTemplate<String, String> kafkaTemplate;
-    private ListenableFuture mockFuture;
+    private KafkaSendStrategyFactory sendStrategyFactory;
 
-    @Spy
-    NotificationMapper notificationMapper = new NotificationMapperImpl();
+    private SendSapNotification sapSendService;
+
+    private SendFdNotification fdNotificationService;
+
     @Spy
     private ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     private ObjectMapper objectMapper;
-    private Map<String, String> allowedTopics;
-    private SendResult<String, String> mockSendResult;
 
     @BeforeEach
     void setUp() {
         openMocks(this);
-        allowedTopics = new HashMap<>();
-        allowedTopics.put("prod-fd", "selfcare-fd");
-        kafkaTemplate = mock(KafkaTemplate.class);
-        mockFuture = mock(ListenableFuture.class);
-        apiConnector = mock(InternalApiConnector.class);
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
-        mockSendResult = mock(SendResult.class);
+        fdNotificationService = mock(SendFdNotification.class);
+        sapSendService = mock(SendSapNotification.class);
+        sendStrategyFactory = mock(KafkaSendStrategyFactory.class);
+        interceptor = new KafkaInterceptor(mapper, sendStrategyFactory, sapSendService);
     }
     public KafkaInterceptorTest(){
         objectMapper = new ObjectMapper();
@@ -105,8 +90,9 @@ class KafkaInterceptorTest {
         objectMapper.setTimeZone(TimeZone.getDefault());
     }
 
+
     @Test
-    void testOnSuccessInterceptInstitution() throws IOException {
+    void interceptInstitution() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -115,54 +101,62 @@ class KafkaInterceptorTest {
         notification.setBilling(billing);
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
-
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
-
-        doAnswer(invocationOnMock -> {
-            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onSuccess(mockSendResult);
-            return null;
-        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
-
+        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
-        verifyNoMoreInteractions(apiConnector);
+        verify(sendStrategyFactory, times(1)).create("prod-fd");
+        verify(sapSendService, times(1)).sendInstitutionNotification(notification);
+        verify(fdNotificationService, times(1)).sendInstitutionNotification(notification);
     }
 
     @Test
-    void testOnFailureInterceptInstitution() {
+    void interceptInstitutionDifferentProduct() throws JsonProcessingException {
         //given
-        Notification notification = mockInstance(new Notification());
+        final Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
-        Billing billing = mockInstance(new Billing());
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-io");
+        notification.setState("ACTIVE");
+        when(sendStrategyFactory.create(any())).thenReturn(null);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verify(sendStrategyFactory, times(1)).create("prod-io");
+        verify(sapSendService, times(1)).sendInstitutionNotification(notification);
+        verifyNoInteractions(fdNotificationService);
+    }
+
+    @Test
+    void interceptInstitution_exception() throws IOException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        final Billing billing = mockInstance(new Billing());
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
-        RuntimeException ex = new RuntimeException("error");
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
-        doAnswer(invocationOnMock -> {
-            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onFailure(ex);
-            return null;
-        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+        String notificationString = objectMapper.writeValueAsString(notification);
+        String newPayload = notificationString.replace("PA", "TEST");
+        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
-                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", newPayload))
         );
         //then
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
-        verifyNoMoreInteractions(apiConnector);
+        verifyNoInteractions(sapSendService, fdNotificationService, sendStrategyFactory);
     }
 
+
     @Test
-    void intercept_userNotificationJsonProcessingException() throws JsonProcessingException {
+    void interceptUserNotification() throws JsonProcessingException {
         //given
         final UserNotification notification = mockInstance(new UserNotification());
         final UserNotify userNotify = mockInstance(new UserNotify());
@@ -170,165 +164,47 @@ class KafkaInterceptorTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
 
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
-
-        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
+        verify(sendStrategyFactory, times(1)).create("prod-fd");
+        verify(fdNotificationService, times(1)).sendUserNotification(notification);
     }
 
     @Test
-    void intercept_organizationNotificationJsonProcessingException() throws JsonProcessingException {
+    void interceptUser_exception(){
         //given
-        Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
+        final Notification notification = mockInstance(new Notification());
         notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
 
-        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
-                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
-    }
-
-
-    @Test
-    void productNotAllowed(){
-        //given
-        Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-io");
-        notification.setState("ACTIVE");
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
-        );
-        //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
+        verifyNoInteractions(sendStrategyFactory, fdNotificationService);
     }
 
     @Test
-    void productMap_isEmpty(){
-        //given
-        Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
-        allowedTopics = null;
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
-        );
-        //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
-    }
-    @Test
-    void productNotAllowed_users(){
+    void interceptUserDifferentProd() throws JsonProcessingException {
         //given
         final UserNotification notification = mockInstance(new UserNotification());
         final UserNotify userNotify = mockInstance(new UserNotify());
         userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
         notification.setUser(userNotify);
         notification.setProductId("prod-io");
+        when(sendStrategyFactory.create(any())).thenReturn(null);
         //when
         assertDoesNotThrow(
                 () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
+        verify(sendStrategyFactory, times(1)).create("prod-io");
+        verifyNoInteractions(fdNotificationService);
     }
-
-    @Test
-    void productMap_isEmpty_users(){
-        //given
-        final UserNotification notification = mockInstance(new UserNotification());
-        final UserNotify userNotify = mockInstance(new UserNotify());
-        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
-        notification.setUser(userNotify);
-        notification.setProductId("prod-fd");
-        allowedTopics = null;
-        interceptor = new KafkaInterceptor(mapper, apiConnector, allowedTopics, kafkaTemplate, notificationMapper);
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
-        );
-        //then
-        verifyNoInteractions(apiConnector, kafkaTemplate);
-    }
-
-    @Test
-    void interceptUsers_onSucces() throws JsonProcessingException {
-        //given
-        final UserNotification notification = mockInstance(new UserNotification());
-        final UserNotify userNotify = mockInstance(new UserNotify());
-        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
-        notification.setUser(userNotify);
-        notification.setProductId("prod-fd");
-
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
-
-        doAnswer(invocationOnMock -> {
-            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onSuccess(mockSendResult);
-            return null;
-        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
-
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-Users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
-        );
-        //then
-        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), messageCaptor.capture());
-        NotificationToSend capturedNotification = objectMapper.readValue(messageCaptor.getValue(), NotificationToSend.class);
-        checkNotNullFields(capturedNotification.getUser());
-        assertEquals(NotificationType.ACTIVE_USER, capturedNotification.getType());
-        verifyNoInteractions(apiConnector);
-    }
-
-    @Test
-    void testOnFailureInterceptUser(){
-        //given
-        final UserNotification notification = mockInstance(new UserNotification());
-        final UserNotify userNotify = mockInstance(new UserNotify());
-        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
-        notification.setUser(userNotify);
-        notification.setProductId("prod-fd");
-        RuntimeException ex = new RuntimeException("error");
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
-        doAnswer(invocationOnMock -> {
-            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onFailure(ex);
-            return null;
-        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
-        );
-        //then
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
-        verifyNoMoreInteractions(apiConnector);
-    }
-
 
 }
