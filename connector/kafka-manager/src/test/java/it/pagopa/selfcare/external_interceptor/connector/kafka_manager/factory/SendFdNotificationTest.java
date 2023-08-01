@@ -3,6 +3,7 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -100,7 +104,7 @@ class SendFdNotificationTest {
         closeable.close();
     }
     @Test
-    void sendInstitutionNotification(){
+    void sendInstitutionNotification() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -123,11 +127,15 @@ class SendFdNotificationTest {
         Executable executable = () -> service.sendInstitutionNotification(notification);
         //then
         assertDoesNotThrow(executable);
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), institutionCaptor.capture());
+        NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "user");
+        checkNotNullFields(captured.getInstitution());
     }
 
     @Test
-    void sendUserNotification_ok(){
+    void sendUserNotification_ok() throws JsonProcessingException {
         //given
         final UserNotification notification = mockInstance(new UserNotification());
         final UserNotify userNotify = mockInstance(new UserNotify());
@@ -147,7 +155,10 @@ class SendFdNotificationTest {
         Executable executable = () -> service.sendUserNotification(notification);
         //then
         assertDoesNotThrow(executable);
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "institution", "billing", "state", "closedAt");
     }
 
     @Test
@@ -172,6 +183,77 @@ class SendFdNotificationTest {
                 () -> service.sendInstitutionNotification(notification)
         );
         //then
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), notNull());
+        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), anyString());
+    }
+
+    @Test
+    void productNotAllowed(){
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-io");
+        notification.setState("ACTIVE");
+        //when
+        assertDoesNotThrow(
+                () -> service.sendInstitutionNotification(notification)
+        );
+        //then
+        verifyNoInteractions( kafkaTemplate);
+    }
+
+    @Test
+    void productMap_isEmpty(){
+        //given
+        Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+        allowedTopics = null;
+        service = new SendFdNotification( allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        //when
+        assertDoesNotThrow(
+                () -> service.sendInstitutionNotification(notification)
+        );
+        //then
+        verifyNoInteractions(kafkaTemplate);
+    }
+    @Test
+    void productNotAllowed_users(){
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-io");
+        //when
+        assertDoesNotThrow(
+                () -> service.sendUserNotification(notification)
+        );
+        //then
+        verifyNoInteractions( kafkaTemplate);
+    }
+
+    @Test
+    void productMap_isEmpty_users(){
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        allowedTopics = null;
+        service = new SendFdNotification( allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        //when
+        assertDoesNotThrow(
+                () -> service.sendUserNotification(notification)
+        );
+        //then
+        verifyNoInteractions(kafkaTemplate);
     }
 }

@@ -168,4 +168,5 @@ class KafkaInterceptorTest {
         verifyNoInteractions(sendStrategyFactory, fdNotificationService);
     }
 
+
 }
