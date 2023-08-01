@@ -28,12 +28,16 @@ public class SendSapNotification extends KafkaSend {
 
     @Override
     public void sendInstitutionNotification(Notification notification) throws JsonProcessingException {
+        log.trace("sendInstitutionNotification start");
+        log.debug("send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
         notificationToSend.setType(NotificationType.ADD_INSTITUTE);
         String institutionNotification = mapper.writeValueAsString(notificationToSend);
         String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
         String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
         sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure);
+        log.trace("sendInstitutionNotification end");
+
     }
 
     @Override

@@ -25,6 +25,8 @@ public abstract class KafkaSend implements KafkaSendService {
     }
 
     void sendNotification(String message, String topic, String successLog, String logFailure) {
+        log.trace("sendNotification start");
+        log.debug("send notification message = {}, to topic: {}", message, topic);
         ListenableFuture<SendResult<String, String>> future =
                 kafkaTemplate.send(topic, message);
         future.addCallback(new ListenableFutureCallback<>() {
@@ -38,5 +40,6 @@ public abstract class KafkaSend implements KafkaSendService {
                 log.warn(logFailure, ex.getMessage(), ex);
             }
         });
+        log.trace("sendNotification end");
     }
 }

@@ -33,6 +33,8 @@ public class SendFdNotification extends KafkaSend {
 
     @Override
     public void sendInstitutionNotification(Notification notification) throws JsonProcessingException {
+        log.trace("sendInstitutionNotification start");
+        log.debug("send institution notification = {}", notification);
         if (validateProductTopic(notification.getProduct())) {
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
             notificationToSend.setType(NotificationType.ADD_INSTITUTE);
@@ -42,10 +44,13 @@ public class SendFdNotification extends KafkaSend {
             String logFailure = String.format("error during notification sending for token %s: {}, on FD ", notification.getOnboardingTokenId());
             sendNotification(institutionNotification, topic, logSuccess, logFailure);
         }
+        log.trace("sendInstitutionNotification end");
     }
 
     @Override
     public void sendUserNotification(UserNotification userNotification) throws JsonProcessingException {
+        log.trace("sendUserNotification start");
+        log.debug("send user notification = {}", userNotification);
         if (validateProductTopic(userNotification.getProductId())) {
             NotificationToSend notificationToSend = notificationMapper.createUserNotification(userNotification);
             notificationToSend.setType(NotificationType.getNotificationTypeFromRelationshipState(userNotification.getUser().getRelationshipStatus()));
@@ -55,6 +60,8 @@ public class SendFdNotification extends KafkaSend {
             String logFailure = String.format("error during notification sending for user %s: {}, on FD ", userNotification.getUser().getUserId());
             sendNotification(userNotificationToSend, topic, logSuccess, logFailure);
         }
+        log.trace("sendUserNotification end");
+
     }
 
     private boolean validateProductTopic(String productId){

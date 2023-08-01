@@ -41,7 +41,7 @@ public class KafkaProducerConfig {
     public ProducerFactory<String, String> producerFactoryFd() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId+"-fs-producer");
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId+"-fd-producer");
         props.put(AdminClientConfig.SECURITY_PROTOCOL_CONFIG, securityProtocol);
         props.put(SaslConfigs.SASL_MECHANISM, saslMechanism);
         props.put(SaslConfigs.SASL_JAAS_CONFIG, saslProducerConfigFd);
