@@ -18,9 +18,6 @@ import org.springframework.stereotype.Service;
 @Qualifier("sapNotificator")
 public class SendSapNotification extends KafkaSend {
 
-    @Autowired
-    private ObjectMapper mapper;
-
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
                                KafkaTemplate<String, String> kafkaTemplate,
