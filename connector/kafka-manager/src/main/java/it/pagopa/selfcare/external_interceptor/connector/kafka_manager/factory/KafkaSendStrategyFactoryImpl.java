@@ -1,7 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -10,7 +9,6 @@ public class KafkaSendStrategyFactoryImpl implements KafkaSendStrategyFactory{
 
     private final SendFdNotification fdNotification;
 
-    @Autowired
     public KafkaSendStrategyFactoryImpl(SendFdNotification fdNotification) {
         this.fdNotification = fdNotification;
     }
