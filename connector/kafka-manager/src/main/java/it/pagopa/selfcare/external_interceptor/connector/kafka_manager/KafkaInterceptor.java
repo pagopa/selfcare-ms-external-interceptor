@@ -37,7 +37,8 @@ public class KafkaInterceptor {
         try {
             notification = mapper.readValue(inboundRecord.value(), Notification.class);
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProduct());
-            sendService.sendInstitutionNotification(notification);
+            if(sendService!= null)
+                sendService.sendInstitutionNotification(notification);
             sapSendService.sendInstitutionNotification(notification);
         } catch (JsonProcessingException e) {
             log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
@@ -55,7 +56,8 @@ public class KafkaInterceptor {
         try {
             notification = mapper.readValue(inboundRecord.value(), UserNotification.class);
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProductId());
-            sendService.sendUserNotification(notification);
+            if(sendService!= null)
+                sendService.sendUserNotification(notification);
         } catch (JsonProcessingException e) {
             log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
         }

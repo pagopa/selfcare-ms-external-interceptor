@@ -113,6 +113,27 @@ class KafkaInterceptorTest {
     }
 
     @Test
+    void interceptInstitutionDifferentProduct() throws JsonProcessingException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-io");
+        notification.setState("ACTIVE");
+        when(sendStrategyFactory.create(any())).thenReturn(null);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verify(sendStrategyFactory, times(1)).create("prod-fd");
+        verify(sapSendService, times(1)).sendInstitutionNotification(notification);
+        verifyNoInteractions(fdNotificationService);
+    }
+
+    @Test
     void interceptInstitution_exception() throws IOException {
         //given
         final Notification notification = mockInstance(new Notification());
@@ -168,5 +189,22 @@ class KafkaInterceptorTest {
         verifyNoInteractions(sendStrategyFactory, fdNotificationService);
     }
 
+    @Test
+    void interceptUserDifferentProd() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-io");
+        when(sendStrategyFactory.create(any())).thenReturn(null);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
+        );
+        //then
+        verify(sendStrategyFactory, times(1)).create("prod-io");
+        verifyNoInteractions(fdNotificationService);
+    }
 
 }
