@@ -128,7 +128,7 @@ class KafkaInterceptorTest {
                 () -> interceptor.interceptInstitution(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)))
         );
         //then
-        verify(sendStrategyFactory, times(1)).create("prod-fd");
+        verify(sendStrategyFactory, times(1)).create("prod-io");
         verify(sapSendService, times(1)).sendInstitutionNotification(notification);
         verifyNoInteractions(fdNotificationService);
     }
