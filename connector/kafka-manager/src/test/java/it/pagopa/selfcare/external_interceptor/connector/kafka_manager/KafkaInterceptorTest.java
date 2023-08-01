@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendFdNotification;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendSapNotification;
@@ -22,20 +21,13 @@ import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotify;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
@@ -64,12 +56,7 @@ class KafkaInterceptorTest {
         }
     }
 
-    @Mock
-    private ListenableFutureCallback<SendResult<String, String>> mockProducerCallback;
     private KafkaInterceptor interceptor;
-    private InternalApiConnector apiConnector;
-    private KafkaTemplate<String, String> kafkaTemplate;
-    private ListenableFuture mockFuture;
     private KafkaSendStrategyFactory sendStrategyFactory;
 
     private SendSapNotification sapSendService;
@@ -81,21 +68,14 @@ class KafkaInterceptorTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-    private Map<String, String> allowedTopics;
-    private SendResult<String, String> mockSendResult;
 
     @BeforeEach
     void setUp() {
         openMocks(this);
-        allowedTopics = new HashMap<>();
-        allowedTopics.put("prod-fd", "selfcare-fd");
-        kafkaTemplate = mock(KafkaTemplate.class);
-        mockFuture = mock(ListenableFuture.class);
         fdNotificationService = mock(SendFdNotification.class);
         sapSendService = mock(SendSapNotification.class);
         sendStrategyFactory = mock(KafkaSendStrategyFactory.class);
         interceptor = new KafkaInterceptor(mapper, sendStrategyFactory, sapSendService);
-        mockSendResult = mock(SendResult.class);
     }
     public KafkaInterceptorTest(){
         objectMapper = new ObjectMapper();
@@ -163,8 +143,6 @@ class KafkaInterceptorTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
 
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
         when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
@@ -181,8 +159,6 @@ class KafkaInterceptorTest {
         final Notification notification = mockInstance(new Notification());
         notification.setProduct("prod-fd");
 
-        when(kafkaTemplate.send(any(), any()))
-                .thenReturn(mockFuture);
         when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
         //when
         assertDoesNotThrow(
