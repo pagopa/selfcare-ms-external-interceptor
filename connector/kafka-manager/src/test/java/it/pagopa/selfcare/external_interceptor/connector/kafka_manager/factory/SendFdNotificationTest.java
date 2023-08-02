@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -68,12 +69,14 @@ class SendFdNotificationTest {
             return mapper;
         }
     }
+
     private Map<String, String> allowedTopics;
     private KafkaTemplate<String, String> kafkaTemplate;
     @Mock
     private ListenableFutureCallback<SendResult<String, String>> mockProducerCallback;
     private ListenableFuture mockFuture;
     private SendResult<String, String> mockSendResult;
+    private Acknowledgment acknowledgment;
 
     private SendFdNotification service;
 
@@ -88,13 +91,15 @@ class SendFdNotificationTest {
     private ObjectMapper objectMapper;
 
     AutoCloseable closeable;
+
     @BeforeEach
     void setUp() {
-       closeable = openMocks(this);
+        closeable = openMocks(this);
         allowedTopics = new HashMap<>();
         allowedTopics.put("prod-fd", "selfcare-fd");
         kafkaTemplate = mock(KafkaTemplate.class);
         mockFuture = mock(ListenableFuture.class);
+        acknowledgment = mock(Acknowledgment.class);
         mockSendResult = mock(SendResult.class);
         service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
     }
@@ -103,6 +108,7 @@ class SendFdNotificationTest {
     void close() throws Exception {
         closeable.close();
     }
+
     @Test
     void sendInstitutionNotification() throws JsonProcessingException {
         //given
@@ -124,12 +130,13 @@ class SendFdNotificationTest {
         }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
 
         //when
-        Executable executable = () -> service.sendInstitutionNotification(notification);
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), institutionCaptor.capture());
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        verify(acknowledgment, times(1)).acknowledge();
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
     }
@@ -152,17 +159,18 @@ class SendFdNotificationTest {
             return null;
         }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
         //when
-        Executable executable = () -> service.sendUserNotification(notification);
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
         NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "institution", "billing", "state", "closedAt");
     }
 
     @Test
-    void failed_send(){
+    void failed_send() {
         //given
         final Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -180,14 +188,15 @@ class SendFdNotificationTest {
             return null;
         }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));      //when
         assertDoesNotThrow(
-                () -> service.sendInstitutionNotification(notification)
+                () -> service.sendInstitutionNotification(notification, acknowledgment)
         );
         //then
         verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), anyString());
+        verify(acknowledgment, times(1)).nack(60000);
     }
 
     @Test
-    void productNotAllowed(){
+    void productNotAllowed() {
         //given
         Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -198,14 +207,14 @@ class SendFdNotificationTest {
         notification.setState("ACTIVE");
         //when
         assertDoesNotThrow(
-                () -> service.sendInstitutionNotification(notification)
+                () -> service.sendInstitutionNotification(notification, acknowledgment)
         );
         //then
-        verifyNoInteractions( kafkaTemplate);
+        verifyNoInteractions(kafkaTemplate);
     }
 
     @Test
-    void productMap_isEmpty(){
+    void productMap_isEmpty() {
         //given
         Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
@@ -215,16 +224,17 @@ class SendFdNotificationTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
         allowedTopics = null;
-        service = new SendFdNotification( allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
         //when
         assertDoesNotThrow(
-                () -> service.sendInstitutionNotification(notification)
+                () -> service.sendInstitutionNotification(notification, acknowledgment)
         );
         //then
         verifyNoInteractions(kafkaTemplate);
     }
+
     @Test
-    void productNotAllowed_users(){
+    void productNotAllowed_users() {
         //given
         final UserNotification notification = mockInstance(new UserNotification());
         final UserNotify userNotify = mockInstance(new UserNotify());
@@ -233,14 +243,14 @@ class SendFdNotificationTest {
         notification.setProductId("prod-io");
         //when
         assertDoesNotThrow(
-                () -> service.sendUserNotification(notification)
+                () -> service.sendUserNotification(notification, acknowledgment)
         );
         //then
-        verifyNoInteractions( kafkaTemplate);
+        verifyNoInteractions(kafkaTemplate);
     }
 
     @Test
-    void productMap_isEmpty_users(){
+    void productMap_isEmpty_users() {
         //given
         final UserNotification notification = mockInstance(new UserNotification());
         final UserNotify userNotify = mockInstance(new UserNotify());
@@ -248,10 +258,10 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         allowedTopics = null;
-        service = new SendFdNotification( allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
         //when
         assertDoesNotThrow(
-                () -> service.sendUserNotification(notification)
+                () -> service.sendUserNotification(notification, acknowledgment)
         );
         //then
         verifyNoInteractions(kafkaTemplate);

@@ -27,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -69,6 +70,8 @@ class SendSapNotificationTest {
     private NotificationMapper notificationMapperSpy = new NotificationMapperImpl();
     @Spy
     private ObjectMapper mapper = new ObjectMapper();
+
+    private Acknowledgment acknowledgment;
     private ListenableFuture mockFuture;
     private SendResult<String, String> mockSendResult;
     private SendSapNotification service;
@@ -81,6 +84,7 @@ class SendSapNotificationTest {
     @BeforeEach
     void setUp() {
         closeable = openMocks(this);
+        acknowledgment = mock(Acknowledgment.class);
         kafkaTemplate = mock(KafkaTemplate.class);
         mockFuture = mock(ListenableFuture.class);
         mockSendResult = mock(SendResult.class);
@@ -112,11 +116,12 @@ class SendSapNotificationTest {
         }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
 
         //when
-        Executable executable = () -> service.sendInstitutionNotification(notification);
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());

@@ -5,6 +5,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.mapper.Notificati
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -24,20 +25,21 @@ public abstract class KafkaSend implements KafkaSendService {
         this.mapper = mapper;
     }
 
-    void sendNotification(String message, String topic, String successLog, String logFailure) {
+    void sendNotification(String message, String topic, String successLog, String logFailure, Acknowledgment acknowledgment) {
         log.trace("sendNotification start");
         log.debug("send notification message = {}, to topic: {}", message, topic);
-        ListenableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(topic, message);
+        ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, message);
         future.addCallback(new ListenableFutureCallback<>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
                 log.info(successLog);
+                acknowledgment.acknowledge();
             }
 
             @Override
             public void onFailure(Throwable ex) {
                 log.warn(logFailure, ex.getMessage(), ex);
+                acknowledgment.nack(60000);
             }
         });
         log.trace("sendNotification end");

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -32,7 +33,7 @@ public class SendFdNotification extends KafkaSend {
 
 
     @Override
-    public void sendInstitutionNotification(Notification notification) throws JsonProcessingException {
+    public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendInstitutionNotification start");
         log.debug("send institution notification = {}", notification);
         if (validateProductTopic(notification.getProduct())) {
@@ -42,13 +43,13 @@ public class SendFdNotification extends KafkaSend {
             String topic = producerAllowedTopics.get().get(notification.getProduct());
             String logSuccess = String.format("sent notification for token : %s, to FD", notification.getOnboardingTokenId());
             String logFailure = String.format("error during notification sending for token %s: {}, on FD ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, topic, logSuccess, logFailure);
+            sendNotification(institutionNotification, topic, logSuccess, logFailure, acknowledgment);
         }
         log.trace("sendInstitutionNotification end");
     }
 
     @Override
-    public void sendUserNotification(UserNotification userNotification) throws JsonProcessingException {
+    public void sendUserNotification(UserNotification userNotification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendUserNotification start");
         log.debug("send user notification = {}", userNotification);
         if (validateProductTopic(userNotification.getProductId())) {
@@ -58,7 +59,7 @@ public class SendFdNotification extends KafkaSend {
             String topic = producerAllowedTopics.get().get(userNotification.getProductId());
             String logSuccess = String.format("sent notification for user : %s, to FD", userNotification.getUser().getUserId());
             String logFailure = String.format("error during notification sending for user %s: {}, on FD ", userNotification.getUser().getUserId());
-            sendNotification(userNotificationToSend, topic, logSuccess, logFailure);
+            sendNotification(userNotificationToSend, topic, logSuccess, logFailure, acknowledgment);
         }
         log.trace("sendUserNotification end");
 
