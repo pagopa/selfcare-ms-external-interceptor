@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class SendSapNotification extends KafkaSend {
     }
 
     @Override
-    public void sendInstitutionNotification(Notification notification) throws JsonProcessingException {
+    public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendInstitutionNotification start");
         log.debug("send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
@@ -35,13 +36,13 @@ public class SendSapNotification extends KafkaSend {
         String institutionNotification = mapper.writeValueAsString(notificationToSend);
         String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
         String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-        sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure);
+        sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, acknowledgment);
         log.trace("sendInstitutionNotification end");
 
     }
 
     @Override
-    public void sendUserNotification(UserNotification userNotification) throws JsonProcessingException {
+    public void sendUserNotification(UserNotification userNotification, Acknowledgment acknowledgment) throws JsonProcessingException {
 
     }
 
