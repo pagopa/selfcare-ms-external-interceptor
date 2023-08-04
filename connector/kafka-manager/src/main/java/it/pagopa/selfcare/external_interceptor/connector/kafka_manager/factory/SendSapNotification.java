@@ -39,7 +39,7 @@ public class SendSapNotification extends KafkaSend {
         log.debug("send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
         try {
-            GeographicTaxonomies geographicTaxonomies = new GeographicTaxonomies();
+            GeographicTaxonomies geographicTaxonomies = null;
             switch(notification.getInstitution().getSubUnitType()){
                 case "UO":
                     OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
@@ -51,10 +51,14 @@ public class SendSapNotification extends KafkaSend {
                     notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
                     geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
                     break;
+                default:
+                    break;
             }
-            notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
-            notificationToSend.getInstitution().setCountry(geographicTaxonomies.getCountryAbbreviation());
-            notificationToSend.getInstitution().setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+            if(geographicTaxonomies != null) {
+                notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
+                notificationToSend.getInstitution().setCountry(geographicTaxonomies.getCountryAbbreviation());
+                notificationToSend.getInstitution().setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+            }
         } catch (ResourceNotFoundException e) {
             log.warn("Error while searching institution {} on IPA, {} ", notificationToSend.getInstitution().getDescription(), e.getMessage());
             notificationToSend.getInstitution().setIstatCode(null);

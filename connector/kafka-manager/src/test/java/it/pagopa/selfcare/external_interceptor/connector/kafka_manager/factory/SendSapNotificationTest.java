@@ -103,6 +103,40 @@ class SendSapNotificationTest {
     void close() throws Exception {
         closeable.close();
     }
+
+    @Test
+    void sendInstitutionNotificationEc() throws JsonProcessingException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        institution.setSubUnitType("EC");
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        verifyNoMoreInteractions(registryProxyConnector);
+        NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "user");
+        checkNotNullFields(captured.getInstitution());
+    }
     @Test
     void sendInstitutionNotificationUo() throws JsonProcessingException {
         //given
