@@ -58,9 +58,6 @@ public class SendSapNotification extends KafkaSend {
         } catch (ResourceNotFoundException e) {
             log.warn("Error while searching institution {} on IPA, {} ", notificationToSend.getInstitution().getDescription(), e.getMessage());
             notificationToSend.getInstitution().setIstatCode(null);
-        } catch (RuntimeException e){
-            log.warn("Error while calling registry proxy,  {}", e.getMessage());
-            acknowledgment.nack(60000);
         }
         notificationToSend.setType(NotificationType.ADD_INSTITUTE);
         String institutionNotification = mapper.writeValueAsString(notificationToSend);
