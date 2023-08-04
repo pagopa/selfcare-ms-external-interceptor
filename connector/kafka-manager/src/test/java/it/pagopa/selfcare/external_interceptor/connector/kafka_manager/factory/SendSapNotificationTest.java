@@ -10,12 +10,16 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
+import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,16 +104,24 @@ class SendSapNotificationTest {
         closeable.close();
     }
     @Test
-    void sendInstitutionNotification() throws JsonProcessingException {
+    void sendInstitutionNotificationUo() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
         Institution institution = mockInstance(new Institution());
+        institution.setSubUnitType("UO");
         final Billing billing = mockInstance(new Billing());
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
-
+        OrganizationUnit mockUO = mockInstance(new OrganizationUnit());
+        GeographicTaxonomies uoGeoTaxonomy = mockInstance(new GeographicTaxonomies());
+        uoGeoTaxonomy.setCountry("uoCountry");
+        uoGeoTaxonomy.setProvinceAbbreviation("uoProvince");
+        uoGeoTaxonomy.setDescription("uoCity - COMUNE");
+        uoGeoTaxonomy.setIstatCode(mockUO.getMunicipalIstatCode());
+        when(registryProxyConnector.getUoById(any())).thenReturn(mockUO);
+        when(registryProxyConnector.getExtById(any())).thenReturn(uoGeoTaxonomy);
         when(kafkaTemplate.send(any(), any()))
                 .thenReturn(mockFuture);
 
@@ -126,8 +138,88 @@ class SendSapNotificationTest {
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getUoById(institution.getSubUnitCode());
+        verify(registryProxyConnector, times(1)).getExtById(mockUO.getMunicipalIstatCode());
+        verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
+    }
+    @Test
+    void sendInstitutionNotificationAoo() throws JsonProcessingException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        institution.setSubUnitType("AOO");
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+        HomogeneousOrganizationalArea mockUO = mockInstance(new HomogeneousOrganizationalArea());
+        GeographicTaxonomies uoGeoTaxonomy = mockInstance(new GeographicTaxonomies());
+        uoGeoTaxonomy.setCountry("aooCountry");
+        uoGeoTaxonomy.setProvinceAbbreviation("aooProvince");
+        uoGeoTaxonomy.setDescription("aooCity - COMUNE");
+        uoGeoTaxonomy.setIstatCode(mockUO.getMunicipalIstatCode());
+        when(registryProxyConnector.getAooById(any())).thenReturn(mockUO);
+        when(registryProxyConnector.getExtById(any())).thenReturn(uoGeoTaxonomy);
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getAooById(institution.getSubUnitCode());
+        verify(registryProxyConnector, times(1)).getExtById(mockUO.getMunicipalIstatCode());
+        verifyNoMoreInteractions(registryProxyConnector);
+        NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "user");
+        checkNotNullFields(captured.getInstitution());
+    }
+
+    @Test
+    void sendInstitutionNotification_NotFound() throws JsonProcessingException {
+        //given
+        final Notification notification = mockInstance(new Notification());
+        Institution institution = mockInstance(new Institution());
+        institution.setSubUnitType("AOO");
+        final Billing billing = mockInstance(new Billing());
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-fd");
+        notification.setState("ACTIVE");
+        when(registryProxyConnector.getAooById(any())).thenThrow(ResourceNotFoundException.class);
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
+        verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getAooById(institution.getSubUnitCode());
+        verifyNoMoreInteractions(registryProxyConnector);
+        NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "user");
+        checkNotNullFields(captured.getInstitution(), "istatCode", "city", "country", "county");
     }
 }
