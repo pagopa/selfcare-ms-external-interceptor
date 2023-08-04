@@ -27,6 +27,7 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
     private final InstitutionResponseMapper institutionResponseMapper;
 
     private final UserMapper userMapper;
+
     private final InternalApiRestClient restClient;
 
     @Autowired
@@ -61,7 +62,5 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         log.trace("getInstitutionProductUsers end");
         return user;
     }
-
-
 
 }

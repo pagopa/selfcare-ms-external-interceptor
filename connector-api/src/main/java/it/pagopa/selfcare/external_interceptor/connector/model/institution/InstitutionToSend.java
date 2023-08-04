@@ -15,5 +15,13 @@ public class InstitutionToSend {
     private String zipCode;
     private String fileName;
     private String contentType;
+    private PspData paymentServiceProvider;
+    private String istatCode;
+    private String city;
+    private String country;
+    private String county;
+    private String subUnitCode;
+    private String subUnitType;
+    private RootParent rootParent;
 
 }

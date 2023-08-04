@@ -27,7 +27,7 @@ public class SendFdNotification extends KafkaSend {
     @Qualifier("fdProducer")KafkaTemplate<String, String> kafkaTemplate,
                               NotificationMapper notificationMapper,
                               ObjectMapper mapper) {
-        super(kafkaTemplate, notificationMapper, mapper);
+        super(kafkaTemplate, notificationMapper, mapper, null);
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
     }
 
