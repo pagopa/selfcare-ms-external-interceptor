@@ -51,6 +51,8 @@ spec:
             - configMapRef:
                 name: common
             - configMapRef:
+                name: inner-service-url
+            - configMapRef:
                 name: {{ include "this.fullname" . }}
           ports:
             - name: http
