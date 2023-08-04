@@ -2,11 +2,15 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
+import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
+import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationType;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +23,14 @@ import org.springframework.stereotype.Service;
 @Service
 @Qualifier("sapNotificator")
 public class SendSapNotification extends KafkaSend {
-
+    static final String DESCRIPTION_TO_REPLACE_REGEX = " - COMUNE";
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
                                KafkaTemplate<String, String> kafkaTemplate,
                                NotificationMapper notificationMapper,
                                ObjectMapper mapper,
-                               InternalApiConnector internalApiConnector) {
-        super(kafkaTemplate, notificationMapper, mapper, internalApiConnector);
+                               RegistryProxyConnector registryProxyConnector) {
+        super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector);
     }
 
     @Override
@@ -34,6 +38,30 @@ public class SendSapNotification extends KafkaSend {
         log.trace("sendInstitutionNotification start");
         log.debug("send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
+        try {
+            GeographicTaxonomies geographicTaxonomies = new GeographicTaxonomies();
+            switch(notification.getInstitution().getSubUnitType()){
+                case "UO":
+                    OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
+                    notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
+                    geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
+                    break;
+                case "AOO":
+                    HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
+                    notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                    geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                    break;
+            }
+            notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
+            notificationToSend.getInstitution().setCountry(geographicTaxonomies.getCountryAbbreviation());
+            notificationToSend.getInstitution().setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+        } catch (ResourceNotFoundException e) {
+            log.warn("Error while searching institution {} on IPA, {} ", notificationToSend.getInstitution().getDescription(), e.getMessage());
+            notificationToSend.getInstitution().setIstatCode(null);
+        } catch (RuntimeException e){
+            log.warn("Error while calling registry proxy,  {}", e.getMessage());
+            acknowledgment.nack(60000);
+        }
         notificationToSend.setType(NotificationType.ADD_INSTITUTE);
         String institutionNotification = mapper.writeValueAsString(notificationToSend);
         String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());

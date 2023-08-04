@@ -2,7 +2,6 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationType;
@@ -27,8 +26,8 @@ public class SendFdNotification extends KafkaSend {
     public SendFdNotification(@Value("#{${external-interceptor.producer-topics}}") Map<String, String> producerAllowedTopics, @Autowired
     @Qualifier("fdProducer")KafkaTemplate<String, String> kafkaTemplate,
                               NotificationMapper notificationMapper,
-                              ObjectMapper mapper, InternalApiConnector internalApiConnector) {
-        super(kafkaTemplate, notificationMapper, mapper, internalApiConnector);
+                              ObjectMapper mapper) {
+        super(kafkaTemplate, notificationMapper, mapper, null);
         this.producerAllowedTopics = Optional.ofNullable(producerAllowedTopics);
     }
 

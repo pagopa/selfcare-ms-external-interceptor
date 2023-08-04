@@ -1,7 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
+import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
@@ -19,13 +19,13 @@ public abstract class KafkaSend implements KafkaSendService {
     KafkaTemplate<String, String> kafkaTemplate;
     final NotificationMapper notificationMapper;
     final ObjectMapper mapper;
-    final InternalApiConnector internalApiConnector;
+    final RegistryProxyConnector registryProxyConnector;
 
-    KafkaSend(KafkaTemplate<String, String> kafkaTemplate, NotificationMapper notificationMapper, ObjectMapper mapper, InternalApiConnector internalApiConnector){
+    KafkaSend(KafkaTemplate<String, String> kafkaTemplate, NotificationMapper notificationMapper, ObjectMapper mapper, RegistryProxyConnector registryProxyConnector){
         this.kafkaTemplate = kafkaTemplate;
         this.notificationMapper = notificationMapper;
         this.mapper = mapper;
-        this.internalApiConnector = internalApiConnector;
+        this.registryProxyConnector = registryProxyConnector;
     }
 
     void sendNotification(String message, String topic, String successLog, String logFailure, Acknowledgment acknowledgment) {
