@@ -20,4 +20,11 @@ public class Institution {
     private DpoData dataProtectionOfficer;
     private List<GeographicTaxonomy> geographicTaxonomies;
     private CompanyInformations companyInformations;
+    private String istatCode;
+    private String city;
+    private String country;
+    private String county;
+    private String subUnitCode;
+    private String subUnitType;
+    private RootParent rootParent;
 }

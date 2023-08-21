@@ -51,7 +51,7 @@ ingress:
   hosts:
     - host: ""
       paths:
-        - path: /ms-external-interceptor/(.*)
+        - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
@@ -88,6 +88,9 @@ config:
   APPLICATIONINSIGHTS_ROLE_NAME: "ms-external-interceptor"
   KAFKA_AUTO_OFFSET_RESET_CONFIG: "earliest"
   KAFKA_CLIENT_ID: "external-interceptor"
+  KAFKA_GROUP_CONTRACTS_ID_GENERAL: "external-interceptor-contracts-general"
+  KAFKA_GROUP_CONTRACTS_ID_SAP: "external-interceptor-contracts-sap"
+  KAFKA_GROUP_USERS_ID: "external-interceptor-users"
   KAFKA_CONSUMER_CONCURRENCY: "4"
   KAFKA_GROUP_ID: "external-interceptor"
   KAFKA_ONBOARDING_OUTCOME_CONNECTION_MAX_IDLE_TIME: "180000"

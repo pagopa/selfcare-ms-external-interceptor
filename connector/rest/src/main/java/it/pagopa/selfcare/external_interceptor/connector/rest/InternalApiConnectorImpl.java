@@ -3,7 +3,7 @@ package it.pagopa.selfcare.external_interceptor.connector.rest;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.InternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.User;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.User;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UserResponse;
@@ -27,6 +27,7 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
     private final InstitutionResponseMapper institutionResponseMapper;
 
     private final UserMapper userMapper;
+
     private final InternalApiRestClient restClient;
 
     @Autowired
@@ -61,7 +62,5 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         log.trace("getInstitutionProductUsers end");
         return user;
     }
-
-
 
 }

@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.external_interceptor.connector.model.institution;
+package it.pagopa.selfcare.external_interceptor.connector.model.user;
 
 import it.pagopa.selfcare.commons.base.security.PartyRole;
 import lombok.Data;
