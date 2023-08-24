@@ -14,9 +14,9 @@ public class FDApiConnectorImpl implements FDApiConnector {
         this.restClient = restClient;
     }
     @Override
-    public String getFdToken(String grantType, String clientId, String clientSecret) {
+    public String getFdToken() {
         log.trace("getFDToken start");
-        String fdToken = restClient.getFDToken(grantType, clientSecret, clientId);
+        String fdToken = restClient.getFDToken();
         log.debug("getFDToken result = {}", fdToken);
         log.trace("getFDToken end");
         return fdToken;
