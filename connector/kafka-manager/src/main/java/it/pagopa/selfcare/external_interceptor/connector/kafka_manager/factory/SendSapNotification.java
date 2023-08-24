@@ -40,19 +40,21 @@ public class SendSapNotification extends KafkaSend {
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
         try {
             GeographicTaxonomies geographicTaxonomies = null;
-            switch(notification.getInstitution().getSubUnitType()){
-                case "UO":
-                    OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
-                    notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
-                    geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
-                    break;
-                case "AOO":
-                    HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
-                    notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                    geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                    break;
-                default:
-                    break;
+            if(notification.getInstitution().getSubUnitType()!= null) {
+                switch (notification.getInstitution().getSubUnitType()) {
+                    case "UO":
+                        OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
+                        break;
+                    case "AOO":
+                        HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        break;
+                    default:
+                        break;
+                }
             }
             if(geographicTaxonomies != null) {
                 notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
