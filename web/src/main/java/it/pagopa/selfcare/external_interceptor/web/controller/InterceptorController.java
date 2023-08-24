@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
+import it.pagopa.selfcare.external_interceptor.web.model.TokenResource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,12 @@ public class InterceptorController {
             log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, reason = {}", messageId, status, productId, payload.getMessage());
         }
         log.trace("messageAcknowledgment end");
+    }
+
+    @GetMapping(value = "/get-token/{productId}")
+    @ResponseStatus(HttpStatus.OK)
+    public TokenResource getToken(@PathVariable("productId")String productId){
+        return new TokenResource(interceptorService.getFDToken());
     }
 
 }

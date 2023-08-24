@@ -45,6 +45,8 @@ spec:
             - secretRef:
                 name: external-interceptor-event-secrets
             - secretRef:
+                name: external-interceptor
+            - secretRef:
                 name: external-interceptor-apim-internal
             - configMapRef:
                 name: jwt
