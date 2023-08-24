@@ -55,6 +55,8 @@ spec:
             - configMapRef:
                 name: inner-service-url
             - configMapRef:
+                name: external-interceptor-url
+            - configMapRef:
                 name: {{ include "this.fullname" . }}
           ports:
             - name: http
