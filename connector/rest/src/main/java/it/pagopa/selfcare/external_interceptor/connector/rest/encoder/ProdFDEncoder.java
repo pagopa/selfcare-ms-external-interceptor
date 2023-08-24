@@ -13,28 +13,24 @@ import java.util.Map;
 
 public class ProdFDEncoder implements Encoder {
     private final Encoder delegate;
-    private final String grantType;
-    private final String clientId;
-    private final String clientSecret;
 
-    public ProdFDEncoder(String grantType, String clientId, String clientSecret) {
+
+    public ProdFDEncoder() {
         HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
         delegate = new SpringEncoder(() -> new HttpMessageConverters(formHttpMessageConverter));
-        this.grantType = grantType;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+
     }
 
     @Override
     public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
-        Map<String, Object> requestData = Map.of(
-                "grant_type", this.grantType,
-                "client_id", this.clientId,
-                "client_secret", this.clientSecret
-        );
-
-        String formData = formDataToString(requestData);
-        delegate.encode(formData, String.class, template);
+//        Map<String, Object> requestData = Map.of(
+//                "grant_type", this.grantType,
+//                "client_id", this.clientId,
+//                "client_secret", this.clientSecret
+//        );
+//
+//        String formData = formDataToString(requestData);
+        delegate.encode(object, String.class, template);
     }
 
     private String formDataToString(Map<String, Object> formData) {
