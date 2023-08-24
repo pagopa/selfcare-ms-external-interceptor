@@ -13,7 +13,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @Import(RestClientBaseConfig.class)
 @EnableFeignClients(clients = FDRestClientConfig.class)
-@PropertySource("classpath:config/prd-fd-rest-client.properties")
+@PropertySource("classpath:config/prod-fd-rest-client.properties")
 public class FDRestClientConfig {
     @Bean
     public Encoder feignFormEncoder() {
