@@ -12,8 +12,9 @@ import org.springframework.stereotype.Service;
 public class FDAuthorizationInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
-            template.header("Ocp-Apim-Subscription-Key", (String) null)
-                    .header("x-selfcare-uid", (String) null)
+            template.removeHeader("Ocp-Apim-Subscription-Key")
+                    .removeHeader("x-selfcare-uid")
+                    .removeHeader(HttpHeaders.AUTHORIZATION)
                     .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", FDApiConnectorImpl.token));
     }
 }
