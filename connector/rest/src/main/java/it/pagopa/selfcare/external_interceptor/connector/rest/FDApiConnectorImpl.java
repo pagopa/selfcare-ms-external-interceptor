@@ -49,7 +49,11 @@ public class FDApiConnectorImpl implements FDApiConnector {
     public OrganizationLightBean checkOrganization(String fiscalCode, String vatNumber) {
         log.trace("checkOrganization start");
         log.debug("checkOrganization fiscalCode = {}, vatNumber = {}", fiscalCode, vatNumber);
-        OrganizationLightBeanResponse response = restClient.checkOrganization(fiscalCode, vatNumber);
+        EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
+        OauthToken oauthToken = restClient.getFDToken(form);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(oauthToken.getAccessToken(), null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        OrganizationLightBeanResponse response = restClient.checkOrganization(fiscalCode, vatNumber, String.format("Bearer %s", oauthToken.getAccessToken()));
         OrganizationLightBean organizationLightBean = fdMapper.toOrganizationLightBean(response);
         return organizationLightBean;
     }
