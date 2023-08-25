@@ -2,29 +2,24 @@ package it.pagopa.selfcare.external_interceptor.connector.rest.interceptor;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDRestClient;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParamForm;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
+@Slf4j
+@Service
 public class FDAuthorizationInterceptor implements RequestInterceptor {
-    private final FDRestClient restClient;
-    @Value("${external-interceptor.fd-token.grant-type}")
-    private String grantType;
-    @Value("${external-interceptor.fd-token.client-id}")
-    private String clientId;
-    @Value("${external-interceptor.fd-token.client-secret}")
-    private String clientSecret;
-    public FDAuthorizationInterceptor(FDRestClient restClient) {
-        this.restClient = restClient;
-    }
-
     @Override
     public void apply(RequestTemplate template) {
-        EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
-        String jwt = restClient.getFDToken(form).getAccessToken();
-        template.removeHeader(HttpHeaders.AUTHORIZATION)
-                .removeHeader("Ocp-Apim-Subscription-Key")
-                .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwt));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getCredentials() != null) {
+            String token = authentication.getCredentials().toString();
+            template.removeHeader(HttpHeaders.AUTHORIZATION)
+                    .removeHeader("Ocp-Apim-Subscription-Key")
+                    .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", token));
+        }
     }
 }

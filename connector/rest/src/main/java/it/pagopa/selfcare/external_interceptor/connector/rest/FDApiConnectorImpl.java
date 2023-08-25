@@ -11,6 +11,8 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.Token
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.prod_fd.OrganizationLightBeanResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,6 +37,9 @@ public class FDApiConnectorImpl implements FDApiConnector {
         log.trace("getFDToken start");
         EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
         OauthToken oauthToken = restClient.getFDToken(form);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(oauthToken.getAccessToken(), null);
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
         log.debug("getFDToken result = {}", oauthToken);
         log.trace("getFDToken end");
         return tokenMapper.toFDToken(oauthToken);
