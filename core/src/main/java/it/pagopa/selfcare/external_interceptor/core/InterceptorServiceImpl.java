@@ -17,7 +17,7 @@ class InterceptorServiceImpl implements InterceptorService {
     @Override
     public String getFDToken() {
         log.trace("getFDToken start");
-        String fdToken = fdConnector.getFdToken();
+        String fdToken = fdConnector.getFdToken().getAccessToken();
         log.trace("getFDToken end");
         return fdToken;
     }

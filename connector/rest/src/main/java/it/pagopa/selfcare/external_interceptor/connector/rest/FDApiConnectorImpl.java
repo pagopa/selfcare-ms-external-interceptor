@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest;
 
 import it.pagopa.selfcare.external_interceptor.connector.api.FDApiConnector;
+import it.pagopa.selfcare.external_interceptor.connector.model.auth.OauthToken;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDRestClient;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParamForm;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,10 @@ public class FDApiConnectorImpl implements FDApiConnector {
         this.restClient = restClient;
     }
     @Override
-    public String getFdToken() {
+    public OauthToken getFdToken() {
         log.trace("getFDToken start");
         EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
-        String fdToken = restClient.getFDToken(form);
+        OauthToken fdToken = restClient.getFDToken(form);
         log.debug("getFDToken result = {}", fdToken);
         log.trace("getFDToken end");
         return fdToken;
