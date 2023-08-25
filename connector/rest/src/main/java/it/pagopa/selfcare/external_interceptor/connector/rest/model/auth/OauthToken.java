@@ -14,7 +14,9 @@ public class OauthToken {
     private String expiresIn;
 
     @JsonCreator
-    public static OauthToken create(@JsonProperty("access_token") String accessToken, @JsonProperty("access_token") String expiresIn) {
+    public static OauthToken create(
+            @JsonProperty("access_token") String accessToken,
+            @JsonProperty("expires_in") String expiresIn) {
         return new OauthToken(accessToken, expiresIn);
     }
 }
