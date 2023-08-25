@@ -108,6 +108,96 @@
         } ]
       }
     },
+    "/interceptor/checkOrganization/{productId}" : {
+      "get" : {
+        "tags" : [ "interceptor" ],
+        "summary" : "checkOrganization",
+        "operationId" : "checkOrganizationUsingGET",
+        "parameters" : [ {
+          "name" : "productId",
+          "in" : "path",
+          "description" : "productId",
+          "required" : true,
+          "style" : "simple",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "fiscalCode",
+          "in" : "query",
+          "description" : "fiscalCode",
+          "required" : true,
+          "style" : "form",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "vatNumber",
+          "in" : "query",
+          "description" : "vatNumber",
+          "required" : true,
+          "style" : "form",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OrganizationLightBeanResource"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ "global" ]
+        } ]
+      }
+    },
     "/interceptor/get-token/{productId}" : {
       "get" : {
         "tags" : [ "interceptor" ],
@@ -206,6 +296,74 @@
           "reason" : {
             "type" : "string",
             "description" : "Invalid parameter reason."
+          }
+        }
+      },
+      "Organization" : {
+        "title" : "Organization",
+        "type" : "object",
+        "properties" : {
+          "activationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "address" : {
+            "type" : "string"
+          },
+          "assured" : {
+            "type" : "boolean"
+          },
+          "city" : {
+            "type" : "string"
+          },
+          "contractor" : {
+            "type" : "boolean"
+          },
+          "creationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "fiscalCode" : {
+            "type" : "string"
+          },
+          "guarantor" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "legalName" : {
+            "type" : "string"
+          },
+          "province" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "streetNumber" : {
+            "type" : "string"
+          },
+          "typeOfCounterparty" : {
+            "type" : "string"
+          },
+          "vatNumber" : {
+            "type" : "string"
+          },
+          "zipCode" : {
+            "type" : "string"
+          }
+        }
+      },
+      "OrganizationLightBeanResource" : {
+        "title" : "OrganizationLightBeanResource",
+        "type" : "object",
+        "properties" : {
+          "alreadyRegistered" : {
+            "type" : "boolean"
+          },
+          "organization" : {
+            "$ref" : "#/components/schemas/Organization"
           }
         }
       },

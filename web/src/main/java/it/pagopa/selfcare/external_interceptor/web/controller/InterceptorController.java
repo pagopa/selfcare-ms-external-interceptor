@@ -4,9 +4,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
+import it.pagopa.selfcare.external_interceptor.connector.model.prod_fd.OrganizationLightBean;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
+import it.pagopa.selfcare.external_interceptor.web.model.OrganizationLightBeanResource;
 import it.pagopa.selfcare.external_interceptor.web.model.TokenResource;
+import it.pagopa.selfcare.external_interceptor.web.model.mapper.InterceptorMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,11 +24,12 @@ import javax.validation.Valid;
 public class InterceptorController {
 
     private final InterceptorService interceptorService;
-
+    private final InterceptorMapper interceptorMapper;
 
     @Autowired
-    public InterceptorController(InterceptorService interceptorService) {
+    public InterceptorController(InterceptorService interceptorService, InterceptorMapper interceptorMapper) {
         this.interceptorService = interceptorService;
+        this.interceptorMapper = interceptorMapper;
     }
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
     @ResponseStatus(HttpStatus.OK)
@@ -50,4 +54,13 @@ public class InterceptorController {
         return new TokenResource(interceptorService.getFDToken());
     }
 
+    @GetMapping(value = "/checkOrganization/{productId}")
+    @ResponseStatus(HttpStatus.OK)
+    public OrganizationLightBeanResource checkOrganization(@PathVariable("productId")String productId,
+                                                           @RequestParam("fiscalCode")String fiscalCode,
+                                                           @RequestParam("vatNumber")String vatNumber){
+        OrganizationLightBean organizationLightBean = interceptorService.checkOrganization(fiscalCode, vatNumber);
+        OrganizationLightBeanResource resource = interceptorMapper.toResource(organizationLightBean);
+        return resource;
+    }
 }
