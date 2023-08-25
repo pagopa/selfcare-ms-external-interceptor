@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.external_interceptor.connector.model.auth;
+package it.pagopa.selfcare.external_interceptor.connector.rest.model.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.client;
 
-import it.pagopa.selfcare.external_interceptor.connector.model.auth.OauthToken;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParamForm;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.auth.OauthToken;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
