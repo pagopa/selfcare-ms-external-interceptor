@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class FDApiConnectorImpl implements FDApiConnector {
     private final TokenMapper tokenMapper;
     private final FDMapper fdMapper;
+    public static String token;
     @Value("${external-interceptor.fd-token.grant-type}")
     private String grantType;
     @Value("${external-interceptor.fd-token.client-id}")
@@ -51,6 +52,7 @@ public class FDApiConnectorImpl implements FDApiConnector {
         log.debug("checkOrganization fiscalCode = {}, vatNumber = {}", fiscalCode, vatNumber);
         EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
         OauthToken oauthToken = restClient.getFDToken(form);
+        token = oauthToken.getAccessToken();
         OrganizationLightBeanResponse response = restClient.checkOrganization(fiscalCode, vatNumber, oauthToken.getAccessToken());
         OrganizationLightBean organizationLightBean = fdMapper.toOrganizationLightBean(response);
         return organizationLightBean;
