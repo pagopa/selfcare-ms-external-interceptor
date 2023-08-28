@@ -4,15 +4,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
-import it.pagopa.selfcare.external_interceptor.connector.model.prod_fd.OrganizationLightBean;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
-import it.pagopa.selfcare.external_interceptor.web.model.OrganizationLightBeanResource;
-import it.pagopa.selfcare.external_interceptor.web.model.TokenResource;
 import it.pagopa.selfcare.external_interceptor.web.model.mapper.InterceptorMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -31,16 +29,17 @@ public class InterceptorController {
         this.interceptorService = interceptorService;
         this.interceptorMapper = interceptorMapper;
     }
+
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/acknowledgment/{productId}/message/{messageId}/status/{status}")
-    public void messageAcknowledgment(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId")String productId,
-                                      @ApiParam("${swagger.external-interceptor.message.model.id}")@PathVariable("messageId")String messageId,
-                                      @ApiParam("${swagger.external-interceptor.message.model.status}")@PathVariable("status") AckStatus status,
-                                      @RequestBody @Valid AckPayloadRequest payload){
+    public void messageAcknowledgment(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId") String productId,
+                                      @ApiParam("${swagger.external-interceptor.message.model.id}") @PathVariable("messageId") String messageId,
+                                      @ApiParam("${swagger.external-interceptor.message.model.status}") @PathVariable("status") AckStatus status,
+                                      @RequestBody @Valid AckPayloadRequest payload) {
         log.trace("messageAcknowledgment start");
         log.debug("productId = {}, messageId = {}, status = {}, payload = {}", productId, messageId, status, payload);
-        if(AckStatus.ACK.equals(status))
+        if (AckStatus.ACK.equals(status))
             log.info("[SUCCESSFUL Acknowledgment] - Consumer acknowledged message: {} consumption, for product = {}", messageId, productId);
         else {
             log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, reason = {}", messageId, status, productId, payload.getMessage());
@@ -48,19 +47,15 @@ public class InterceptorController {
         log.trace("messageAcknowledgment end");
     }
 
-    @GetMapping(value = "/get-token/{productId}")
-    @ResponseStatus(HttpStatus.OK)
-    public TokenResource getToken(@PathVariable("productId")String productId){
-        return new TokenResource(interceptorService.getFDToken());
-    }
-
-    @GetMapping(value = "/checkOrganization/{productId}")
-    @ResponseStatus(HttpStatus.OK)
-    public OrganizationLightBeanResource checkOrganization(@PathVariable("productId")String productId,
-                                                           @RequestParam("fiscalCode")String fiscalCode,
-                                                           @RequestParam("vatNumber")String vatNumber){
-        OrganizationLightBean organizationLightBean = interceptorService.checkOrganization(fiscalCode, vatNumber);
-        OrganizationLightBeanResource resource = interceptorMapper.toResource(organizationLightBean);
-        return resource;
+    @RequestMapping(method = {RequestMethod.HEAD}, value = "/checkOrganization/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Void> checkOrganization(@PathVariable("productId") String productId,
+                                                  @RequestParam("fiscalCode") String fiscalCode,
+                                                  @RequestParam("vatNumber") String vatNumber) {
+        boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber).isAlreadyRegistered();
+        if (alreadyRegistered)
+            return ResponseEntity.status(HttpStatus.OK).build();
+        else
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

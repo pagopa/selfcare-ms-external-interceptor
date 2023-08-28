@@ -16,14 +16,6 @@ class InterceptorServiceImpl implements InterceptorService {
     }
 
     @Override
-    public String getFDToken() {
-        log.trace("getFDToken start");
-        String fdToken = fdConnector.getFdToken().getAccessToken();
-        log.trace("getFDToken end");
-        return fdToken;
-    }
-
-    @Override
     public OrganizationLightBean checkOrganization(String fiscalCode, String vatNumber) {
         log.trace("checkOrganization start");
         log.debug("checkOrganization fiscalCode = {}, vatNumber = {}", fiscalCode, vatNumber);
