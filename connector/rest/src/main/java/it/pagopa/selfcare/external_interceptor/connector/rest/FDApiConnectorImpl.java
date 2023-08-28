@@ -55,7 +55,7 @@ public class FDApiConnectorImpl implements FDApiConnector {
         EncodedParamForm form = new EncodedParamForm(grantType, clientId, clientSecret);
         OauthToken oauthToken = restClient.getFDToken(form);
         token = oauthToken.getAccessToken();
-        OrganizationLightBeanResponse response = restClient.checkOrganization(fiscalCode, vatNumber, oauthToken.getAccessToken());
+        OrganizationLightBeanResponse response = restClient.checkOrganization(fiscalCode, vatNumber);
         OrganizationLightBean organizationLightBean = fdMapper.toOrganizationLightBean(response);
         return organizationLightBean;
     }
