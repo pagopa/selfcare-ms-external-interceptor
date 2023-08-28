@@ -18,7 +18,7 @@ public interface FDRestClient {
     @PostMapping(value = "${rest-client.prod-fd.login.path}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     OauthToken getFDToken(@RequestBody EncodedParamForm encodedParamForm);
     @Headers("Authorization: Bearer {token}")
-    @GetMapping(value = "${rest-client.prod-fd.check-organization.path}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "${rest-client.prod-fd.check-organization.path}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.ALL_VALUE)
     OrganizationLightBeanResponse checkOrganization(@RequestParam("codiceFiscale") String fiscalCode,
                                                     @RequestParam("partitaIva") String vatNumber,
                                                     @Param("token") String token);

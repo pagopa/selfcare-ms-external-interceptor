@@ -15,6 +15,6 @@ public class FDAuthorizationInterceptor implements RequestInterceptor {
             template.removeHeader("Ocp-Apim-Subscription-Key")
                     .removeHeader("x-selfcare-uid")
                     .removeHeader(HttpHeaders.AUTHORIZATION)
-                    .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", FDApiConnectorImpl.token));
+                    .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", FDApiConnectorImpl.getToken()));
     }
 }

@@ -9,6 +9,7 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.model.auth.OauthTo
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.FDMapper;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.TokenMapper;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.prod_fd.OrganizationLightBeanResponse;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +21,8 @@ import org.springframework.stereotype.Service;
 public class FDApiConnectorImpl implements FDApiConnector {
     private final TokenMapper tokenMapper;
     private final FDMapper fdMapper;
-    public static String token;
+    @Getter
+    private static String token;
     @Value("${external-interceptor.fd-token.grant-type}")
     private String grantType;
     @Value("${external-interceptor.fd-token.client-id}")
