@@ -48,7 +48,7 @@ public class InterceptorController {
     }
 
     @RequestMapping(method = {RequestMethod.HEAD}, value = "/checkOrganization/{productId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> checkOrganization(@PathVariable("productId") String productId,
                                                   @RequestParam("fiscalCode") String fiscalCode,
                                                   @RequestParam("vatNumber") String vatNumber) {
