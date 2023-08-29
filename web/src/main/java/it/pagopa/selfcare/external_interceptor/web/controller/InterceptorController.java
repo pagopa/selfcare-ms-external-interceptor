@@ -45,7 +45,7 @@ public class InterceptorController {
     }
 
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.checkOrganization.api}")
-    @RequestMapping(method = {RequestMethod.HEAD}, value = "/checkOrganization/{productId}")
+    @RequestMapping(method = {RequestMethod.HEAD}, value = "/organizations/{productId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> checkOrganization(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId") String productId,
                                                   @ApiParam("${swagger.external-interceptor.institution.model.fiscalCode}") @RequestParam("fiscalCode") String fiscalCode,

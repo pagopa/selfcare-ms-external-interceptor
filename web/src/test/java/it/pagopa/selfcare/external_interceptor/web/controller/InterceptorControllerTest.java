@@ -69,7 +69,7 @@ class InterceptorControllerTest {
         when(interceptorService.checkOrganization(anyString(), anyString())).thenReturn(true);
         //when
         mvc.perform(MockMvcRequestBuilders
-                .head(BASE_URL + "/checkOrganization/{productId}", productId)
+                .head(BASE_URL + "/organizations/{productId}", productId)
                 .param("fiscalCode", fiscalCode)
                 .param("vatNumber", vatNumber))
                 .andExpect(status().isOk());
@@ -86,7 +86,7 @@ class InterceptorControllerTest {
         when(interceptorService.checkOrganization(anyString(), anyString())).thenReturn(false);
         //when
         mvc.perform(MockMvcRequestBuilders
-                .head(BASE_URL + "/checkOrganization/{productId}", productId)
+                .head(BASE_URL + "/organizations/{productId}", productId)
                 .param("fiscalCode", fiscalCode)
                 .param("vatNumber", vatNumber))
                 .andExpect(status().isNotFound());

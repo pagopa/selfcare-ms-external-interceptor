@@ -108,7 +108,7 @@
         } ]
       }
     },
-    "/interceptor/checkOrganization/{productId}" : {
+    "/interceptor/organizations/{productId}" : {
       "head" : {
         "tags" : [ "interceptor" ],
         "summary" : "checkOrganization",
