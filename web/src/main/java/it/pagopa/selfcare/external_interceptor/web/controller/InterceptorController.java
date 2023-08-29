@@ -44,11 +44,12 @@ public class InterceptorController {
         log.trace("messageAcknowledgment end");
     }
 
+    @ApiOperation(value = "", notes = "${swagger.external-interceptor.checkOrganization.api}")
     @RequestMapping(method = {RequestMethod.HEAD}, value = "/checkOrganization/{productId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> checkOrganization(@PathVariable("productId") String productId,
-                                                  @RequestParam("fiscalCode") String fiscalCode,
-                                                  @RequestParam("vatNumber") String vatNumber) {
+    public ResponseEntity<Void> checkOrganization(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId") String productId,
+                                                  @ApiParam("${swagger.external-interceptor.institution.model.fiscalCode}") @RequestParam("fiscalCode") String fiscalCode,
+                                                  @ApiParam("${swagger.external-interceptor.institution.model.vatNumber}") @RequestParam("vatNumber") String vatNumber) {
         log.trace("checkOrganization start");
         log.debug("checkOrganization productId = {}, fiscalCode = {}, vatNumber = {}", productId, fiscalCode, vatNumber);
         boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber);

@@ -33,7 +33,7 @@
         "parameters" : [ {
           "name" : "productId",
           "in" : "path",
-          "description" : "Product's unique identifier ",
+          "description" : "Product's unique identifier",
           "required" : true,
           "style" : "simple",
           "schema" : {
@@ -112,11 +112,12 @@
       "head" : {
         "tags" : [ "interceptor" ],
         "summary" : "checkOrganization",
+        "description" : "Service to check if an organization is already registered on the product backoffice",
         "operationId" : "checkOrganizationUsingHEAD",
         "parameters" : [ {
           "name" : "productId",
           "in" : "path",
-          "description" : "productId",
+          "description" : "Product's unique identifier",
           "required" : true,
           "style" : "simple",
           "schema" : {
@@ -125,7 +126,7 @@
         }, {
           "name" : "fiscalCode",
           "in" : "query",
-          "description" : "fiscalCode",
+          "description" : "Institution's fiscalCode",
           "required" : true,
           "style" : "form",
           "schema" : {
@@ -134,7 +135,7 @@
         }, {
           "name" : "vatNumber",
           "in" : "query",
-          "description" : "vatNumber",
+          "description" : "Institution's vatNumber",
           "required" : true,
           "style" : "form",
           "schema" : {
