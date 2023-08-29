@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -45,18 +44,12 @@ class FDApiConnectorImplTest {
         OrganizationResponse organizationMock = mockInstance(new OrganizationResponse());
         lightBeanResponseMock.setOrganization(organizationMock);
         OauthToken token = mockInstance(new OauthToken());
-        when(restClientMock.getFDToken(any())).thenReturn(token);
         when(restClientMock.checkOrganization(any(), any())).thenReturn(mockInstance(new OrganizationLightBeanResponse()));
 
         //when
         OrganizationLightBean result = fdApiConnectorMock.checkOrganization(fiscalCode, vatNumber);
         //then
         ArgumentCaptor<EncodedParamForm> paramCaptor = ArgumentCaptor.forClass(EncodedParamForm.class);
-        verify(restClientMock, times(1)).getFDToken(paramCaptor.capture());
-        EncodedParamForm param = paramCaptor.getValue();
-        assertEquals(grantType, param.getGrant_type());
-        assertEquals(clientSecret, param.getClient_secret());
-        assertEquals(clientId, param.getClient_id());
         checkNotNullFields(result);
         verify(restClientMock, times(1)).checkOrganization(fiscalCode, vatNumber);
         verifyNoMoreInteractions(restClientMock);
