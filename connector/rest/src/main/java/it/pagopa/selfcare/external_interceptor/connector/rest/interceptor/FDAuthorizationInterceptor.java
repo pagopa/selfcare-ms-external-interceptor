@@ -9,12 +9,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 @Service
 public class FDAuthorizationInterceptor implements RequestInterceptor {
 
     private final FDTokenRestClient fdRestClient;
     private final EncodedParamForm paramForm;
+    private static final String PLUS_RAW = "+";
+    private static final String PLUS_ENCODED = "%2B";
 
     public FDAuthorizationInterceptor(FDTokenRestClient fdRestClient,
                                       @Value("${external-interceptor.fd-token.grant-type}")
@@ -32,5 +39,11 @@ public class FDAuthorizationInterceptor implements RequestInterceptor {
         template
                 .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", fdRestClient.getFDToken(paramForm).getAccessToken()))
                 .header(HttpHeaders.ACCEPT, "*/*");
+        final Map<String, Collection<String>> queriesPlusEncoded = new HashMap<>();
+        template.queries().forEach((key, value) -> queriesPlusEncoded.put(key, value.stream()
+                .map(paramValue -> paramValue.replace(PLUS_RAW, PLUS_ENCODED))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll)));
+        template.queries(null);
+        template.queries(queriesPlusEncoded);
     }
 }
