@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class FDApiConnectorImpl implements FDApiConnector {
     private final FDMapper fdMapper;
     @Getter
-    private static String token;
+    private String token;
     private final String grantType;
     private final String clientId;
     private final String clientSecret;
