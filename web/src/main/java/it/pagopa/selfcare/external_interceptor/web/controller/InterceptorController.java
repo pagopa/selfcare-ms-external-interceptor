@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
-import it.pagopa.selfcare.external_interceptor.web.model.mapper.InterceptorMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,12 +21,10 @@ import javax.validation.Valid;
 public class InterceptorController {
 
     private final InterceptorService interceptorService;
-    private final InterceptorMapper interceptorMapper;
 
     @Autowired
-    public InterceptorController(InterceptorService interceptorService, InterceptorMapper interceptorMapper) {
+    public InterceptorController(InterceptorService interceptorService) {
         this.interceptorService = interceptorService;
-        this.interceptorMapper = interceptorMapper;
     }
 
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
@@ -52,7 +49,11 @@ public class InterceptorController {
     public ResponseEntity<Void> checkOrganization(@PathVariable("productId") String productId,
                                                   @RequestParam("fiscalCode") String fiscalCode,
                                                   @RequestParam("vatNumber") String vatNumber) {
-        boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber).isAlreadyRegistered();
+        log.trace("checkOrganization start");
+        log.debug("checkOrganization productId = {}, fiscalCode = {}, vatNumber = {}", productId, fiscalCode, vatNumber);
+        boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber);
+        log.debug("checkOrganization result = {}", alreadyRegistered);
+        log.trace("checkOrganization end");
         if (alreadyRegistered)
             return ResponseEntity.status(HttpStatus.OK).build();
         else

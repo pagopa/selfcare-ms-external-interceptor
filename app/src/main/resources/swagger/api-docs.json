@@ -109,10 +109,10 @@
       }
     },
     "/interceptor/checkOrganization/{productId}" : {
-      "get" : {
+      "head" : {
         "tags" : [ "interceptor" ],
         "summary" : "checkOrganization",
-        "operationId" : "checkOrganizationUsingGET",
+        "operationId" : "checkOrganizationUsingHEAD",
         "parameters" : [ {
           "name" : "productId",
           "in" : "path",
@@ -143,126 +143,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/OrganizationLightBeanResource"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Bad Request",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not Found",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ "global" ]
-        } ]
-      }
-    },
-    "/interceptor/get-token/{productId}" : {
-      "get" : {
-        "tags" : [ "interceptor" ],
-        "summary" : "getToken",
-        "operationId" : "getTokenUsingGET",
-        "parameters" : [ {
-          "name" : "productId",
-          "in" : "path",
-          "description" : "productId",
-          "required" : true,
-          "style" : "simple",
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TokenResource"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Bad Request",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Not Found",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Problem"
-                }
-              }
-            }
+            "description" : "OK"
           }
         },
         "security" : [ {
@@ -296,74 +177,6 @@
           "reason" : {
             "type" : "string",
             "description" : "Invalid parameter reason."
-          }
-        }
-      },
-      "Organization" : {
-        "title" : "Organization",
-        "type" : "object",
-        "properties" : {
-          "activationDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "address" : {
-            "type" : "string"
-          },
-          "assured" : {
-            "type" : "boolean"
-          },
-          "city" : {
-            "type" : "string"
-          },
-          "contractor" : {
-            "type" : "boolean"
-          },
-          "creationDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "fiscalCode" : {
-            "type" : "string"
-          },
-          "guarantor" : {
-            "type" : "boolean"
-          },
-          "id" : {
-            "type" : "string"
-          },
-          "legalName" : {
-            "type" : "string"
-          },
-          "province" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "streetNumber" : {
-            "type" : "string"
-          },
-          "typeOfCounterparty" : {
-            "type" : "string"
-          },
-          "vatNumber" : {
-            "type" : "string"
-          },
-          "zipCode" : {
-            "type" : "string"
-          }
-        }
-      },
-      "OrganizationLightBeanResource" : {
-        "title" : "OrganizationLightBeanResource",
-        "type" : "object",
-        "properties" : {
-          "alreadyRegistered" : {
-            "type" : "boolean"
-          },
-          "organization" : {
-            "$ref" : "#/components/schemas/Organization"
           }
         }
       },
@@ -403,15 +216,6 @@
           }
         },
         "description" : "A \"problem detail\" as a way to carry machine-readable details of errors (https://datatracker.ietf.org/doc/html/rfc7807)"
-      },
-      "TokenResource" : {
-        "title" : "TokenResource",
-        "type" : "object",
-        "properties" : {
-          "jwt" : {
-            "type" : "string"
-          }
-        }
       }
     },
     "securitySchemes" : {

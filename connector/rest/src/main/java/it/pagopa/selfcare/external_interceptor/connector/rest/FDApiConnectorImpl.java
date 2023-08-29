@@ -18,16 +18,23 @@ public class FDApiConnectorImpl implements FDApiConnector {
     private final FDMapper fdMapper;
     @Getter
     private static String token;
-    @Value("${external-interceptor.fd-token.grant-type}")
-    private String grantType;
-    @Value("${external-interceptor.fd-token.client-id}")
-    private String clientId;
-    @Value("${external-interceptor.fd-token.client-secret}")
-    private String clientSecret;
+    private final String grantType;
+    private final String clientId;
+    private final String clientSecret;
     private final FDRestClient restClient;
-    public FDApiConnectorImpl(FDMapper fdMapper, FDRestClient restClient){
+    public FDApiConnectorImpl(FDMapper fdMapper,
+                              FDRestClient restClient,
+                              @Value("${external-interceptor.fd-token.grant-type}")
+                              String grantType,
+                              @Value("${external-interceptor.fd-token.client-id}")
+                              String clientId,
+                              @Value("${external-interceptor.fd-token.client-secret}")
+                              String clientSecret){
         this.fdMapper = fdMapper;
         this.restClient = restClient;
+        this.grantType = grantType;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
     }
 
     @Override
