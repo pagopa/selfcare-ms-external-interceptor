@@ -6,5 +6,4 @@ public interface FDApiConnector {
 
     OrganizationLightBean checkOrganization(String fiscalCode, String vatNumber);
 
-    String getToken();
 }

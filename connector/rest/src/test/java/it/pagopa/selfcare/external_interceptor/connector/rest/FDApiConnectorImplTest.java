@@ -2,15 +2,12 @@ package it.pagopa.selfcare.external_interceptor.connector.rest;
 
 import it.pagopa.selfcare.external_interceptor.connector.model.prod_fd.OrganizationLightBean;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDRestClient;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParamForm;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.auth.OauthToken;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.FDMapper;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.FDMapperImpl;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.prod_fd.OrganizationLightBeanResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.prod_fd.OrganizationResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,22 +31,17 @@ class FDApiConnectorImplTest {
     @Test
     void checkOrganization(){
         //given
-        String grantType = "grant_type";
-        String clientId = "client_id";
-        String clientSecret = "client_secret";
         String fiscalCode = "fiscalCode";
         String vatNumber = "vatNumber";
-        FDApiConnectorImpl fdApiConnectorMock = new FDApiConnectorImpl(fdMapper, restClientMock, grantType, clientId, clientSecret);
+        FDApiConnectorImpl fdApiConnectorMock = new FDApiConnectorImpl(fdMapper, restClientMock);
         OrganizationLightBeanResponse lightBeanResponseMock = mockInstance(new OrganizationLightBeanResponse());
         OrganizationResponse organizationMock = mockInstance(new OrganizationResponse());
         lightBeanResponseMock.setOrganization(organizationMock);
-        OauthToken token = mockInstance(new OauthToken());
         when(restClientMock.checkOrganization(any(), any())).thenReturn(mockInstance(new OrganizationLightBeanResponse()));
 
         //when
         OrganizationLightBean result = fdApiConnectorMock.checkOrganization(fiscalCode, vatNumber);
         //then
-        ArgumentCaptor<EncodedParamForm> paramCaptor = ArgumentCaptor.forClass(EncodedParamForm.class);
         checkNotNullFields(result);
         verify(restClientMock, times(1)).checkOrganization(fiscalCode, vatNumber);
         verifyNoMoreInteractions(restClientMock);

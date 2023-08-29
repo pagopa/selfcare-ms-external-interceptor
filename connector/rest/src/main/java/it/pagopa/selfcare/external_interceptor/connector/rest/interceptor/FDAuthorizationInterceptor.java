@@ -6,13 +6,11 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDTokenRest
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParamForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@Lazy
 public class FDAuthorizationInterceptor implements RequestInterceptor {
 
     private final FDTokenRestClient fdRestClient;
