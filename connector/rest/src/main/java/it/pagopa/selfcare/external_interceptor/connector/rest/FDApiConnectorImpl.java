@@ -16,11 +16,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class FDApiConnectorImpl implements FDApiConnector {
     private final FDMapper fdMapper;
-    @Getter
-    private String token;
     private final String grantType;
     private final String clientId;
     private final String clientSecret;
+    @Getter
+    private String token;
     private final FDRestClient restClient;
     public FDApiConnectorImpl(FDMapper fdMapper,
                               FDRestClient restClient,
@@ -50,4 +50,5 @@ public class FDApiConnectorImpl implements FDApiConnector {
         log.trace("checkOrganization end");
         return organizationLightBean;
     }
+
 }

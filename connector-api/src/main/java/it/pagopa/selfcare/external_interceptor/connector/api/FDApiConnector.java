@@ -5,4 +5,6 @@ import it.pagopa.selfcare.external_interceptor.connector.model.prod_fd.Organizat
 public interface FDApiConnector {
 
     OrganizationLightBean checkOrganization(String fiscalCode, String vatNumber);
+
+    String getToken();
 }
