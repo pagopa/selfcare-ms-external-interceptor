@@ -11,5 +11,5 @@ import org.springframework.context.annotation.PropertySource;
 @Import(RestClientBaseConfig.class)
 @EnableFeignClients(clients = InternalApiRestClient.class)
 @PropertySource("classpath:config/internal-api-rest-client.properties")
-class InternalApiRestClientConfig {
+public class InternalApiRestClientConfig {
 }

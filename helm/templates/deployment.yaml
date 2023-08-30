@@ -45,6 +45,8 @@ spec:
             - secretRef:
                 name: external-interceptor-event-secrets
             - secretRef:
+                name: external-interceptor
+            - secretRef:
                 name: external-interceptor-apim-internal
             - configMapRef:
                 name: jwt
@@ -52,6 +54,8 @@ spec:
                 name: common
             - configMapRef:
                 name: inner-service-url
+            - configMapRef:
+                name: external-interceptor-url
             - configMapRef:
                 name: {{ include "this.fullname" . }}
           ports:
