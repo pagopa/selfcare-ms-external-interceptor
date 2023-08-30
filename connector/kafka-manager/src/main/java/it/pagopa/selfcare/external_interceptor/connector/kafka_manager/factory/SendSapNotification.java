@@ -39,7 +39,7 @@ public class SendSapNotification extends KafkaSend {
         log.debug("send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
         try {
-            GeographicTaxonomies geographicTaxonomies = new GeographicTaxonomies();
+            GeographicTaxonomies geographicTaxonomies = null;
             if(notification.getInstitution().getSubUnitType()!= null) {
                 switch (notification.getInstitution().getSubUnitType()) {
                     case "UO":
@@ -53,7 +53,6 @@ public class SendSapNotification extends KafkaSend {
                         geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
                         break;
                     default:
-                        geographicTaxonomies = null;
                         break;
                 }
             }
