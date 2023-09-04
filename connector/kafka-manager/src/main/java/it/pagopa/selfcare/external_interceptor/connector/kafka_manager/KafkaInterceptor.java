@@ -2,6 +2,7 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendService;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendSapNotification;
@@ -32,7 +33,7 @@ public class KafkaInterceptor {
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-contracts-read-topic}", containerFactory = "kafkaContractsListenerContainerFactoryGeneral")
     public void interceptInstitutionGeneral(ConsumerRecord<String, String> inboundRecord, Acknowledgment acknowledgment) {
         log.trace("KafkaInterceptor intercept start");
-        log.debug("KafKaInterceptor incoming message = {}", inboundRecord);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor incoming message = {}", inboundRecord);
         try {
             Notification notification = mapper.readValue(inboundRecord.value(), Notification.class);
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProduct());
@@ -48,7 +49,7 @@ public class KafkaInterceptor {
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-contracts-read-topic}", containerFactory = "kafkaContractsListenerContainerFactorySap")
     public void interceptInstitutionSap(ConsumerRecord<String, String> inboundRecord, Acknowledgment acknowledgment) {
         log.trace("KafkaInterceptor intercept start");
-        log.debug("KafKaInterceptor incoming message = {}", inboundRecord);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor incoming message = {}", inboundRecord);
         try {
             Notification notification = mapper.readValue(inboundRecord.value(), Notification.class);
             sapSendService.sendInstitutionNotification(notification, acknowledgment);
@@ -61,7 +62,7 @@ public class KafkaInterceptor {
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-users-read-topic}", containerFactory = "kafkaUserListenerContainerFactory")
     public void interceptUsers(ConsumerRecord<String, String> inboundRecord, Acknowledgment acknowledgment) {
         log.trace("KafkaInterceptor intercept users start");
-        log.debug("KafKaInterceptor incoming user message = {}", inboundRecord);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor incoming user message = {}", inboundRecord);
 
         try {
             UserNotification notification = mapper.readValue(inboundRecord.value(), UserNotification.class);
