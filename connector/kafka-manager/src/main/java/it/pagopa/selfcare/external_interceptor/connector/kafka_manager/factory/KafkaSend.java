@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public abstract class KafkaSend implements KafkaSendService {
 
     void sendNotification(String message, String topic, String successLog, String logFailure, Acknowledgment acknowledgment) {
         log.trace("sendNotification start");
-        log.debug("send notification message = {}, to topic: {}", message, topic);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "send notification message = {}, to topic: {}", message, topic);
         ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, message);
         future.addCallback(new ListenableFutureCallback<>() {
             @Override
