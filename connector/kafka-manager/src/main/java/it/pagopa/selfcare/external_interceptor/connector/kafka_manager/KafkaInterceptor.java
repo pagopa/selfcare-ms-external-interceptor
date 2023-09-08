@@ -32,8 +32,8 @@ public class KafkaInterceptor {
 
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-contracts-read-topic}", containerFactory = "kafkaContractsListenerContainerFactoryGeneral")
     public void interceptInstitutionGeneral(ConsumerRecord<String, String> inboundRecord, Acknowledgment acknowledgment) {
-        log.trace("KafkaInterceptor intercept start");
-        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor incoming message = {}", inboundRecord);
+        log.trace("KafkaInterceptor GENERAL intercept start");
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor GENERAL incoming message = {}", inboundRecord);
         try {
             Notification notification = mapper.readValue(inboundRecord.value(), Notification.class);
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProduct());
@@ -43,20 +43,20 @@ public class KafkaInterceptor {
             log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
         }
 
-        log.trace("KafkaInterceptor intercept end");
+        log.trace("KafkaInterceptor GENERAL intercept end");
     }
 
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-contracts-read-topic}", containerFactory = "kafkaContractsListenerContainerFactorySap")
     public void interceptInstitutionSap(ConsumerRecord<String, String> inboundRecord, Acknowledgment acknowledgment) {
-        log.trace("KafkaInterceptor intercept start");
-        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor incoming message = {}", inboundRecord);
+        log.trace("KafkaInterceptor SAP intercept start");
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafKaInterceptor SAP incoming message = {}", inboundRecord);
         try {
             Notification notification = mapper.readValue(inboundRecord.value(), Notification.class);
             sapSendService.sendInstitutionNotification(notification, acknowledgment);
         } catch (JsonProcessingException e) {
             log.warn(NOTIFICATION_CONVERSION_EXCEPTION, e);
         }
-        log.trace("KafkaInterceptor intercept end");
+        log.trace("KafkaInterceptor SAP intercept end");
     }
 
     @KafkaListener(topics = "${kafka-manager.external-interceptor.sc-users-read-topic}", containerFactory = "kafkaUserListenerContainerFactory")

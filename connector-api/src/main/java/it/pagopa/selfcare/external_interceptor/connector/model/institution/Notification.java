@@ -15,7 +15,7 @@ public class Notification {
     private String pricingPlan;
     private Institution institution;
     private Billing billing;
-    private String  updatedAt;
+    private String updatedAt;
     private String createdAt;
     private String closedAt;
 }
