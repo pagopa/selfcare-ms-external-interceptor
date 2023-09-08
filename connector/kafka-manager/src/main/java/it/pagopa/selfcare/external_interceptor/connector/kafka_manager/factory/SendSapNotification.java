@@ -2,6 +2,7 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
@@ -36,23 +37,25 @@ public class SendSapNotification extends KafkaSend {
     @Override
     public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendInstitutionNotification start");
-        log.debug("send institution notification = {}", notification);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
         NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
         try {
             GeographicTaxonomies geographicTaxonomies = null;
-            switch(notification.getInstitution().getSubUnitType()){
-                case "UO":
-                    OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
-                    notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
-                    geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
-                    break;
-                case "AOO":
-                    HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
-                    notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                    geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                    break;
-                default:
-                    break;
+            if(notification.getInstitution().getSubUnitType()!= null) {
+                switch (notification.getInstitution().getSubUnitType()) {
+                    case "UO":
+                        OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
+                        break;
+                    case "AOO":
+                        HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        break;
+                    default:
+                        break;
+                }
             }
             if(geographicTaxonomies != null) {
                 notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
