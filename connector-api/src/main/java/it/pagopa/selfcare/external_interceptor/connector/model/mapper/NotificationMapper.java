@@ -32,8 +32,6 @@ public interface NotificationMapper {
 
 
     @Named("toUserToSend")
-    @Mapping(target = "surname", source = "user.familyName")
-    @Mapping(target = "taxCode", source = "user.fiscalCode")
     @Mapping(target = "roles", expression = "java(toUserRole(user.getProductRole()))")
     UserToSend toUserToSend(UserNotify user);
 

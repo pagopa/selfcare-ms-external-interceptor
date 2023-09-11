@@ -166,7 +166,7 @@ class SendFdNotificationTest {
         verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
         NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
-        checkNotNullFields(captured, "institution", "billing", "state", "closedAt");
+        checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType");
     }
 
     @Test

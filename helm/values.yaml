@@ -101,4 +101,4 @@ config:
   KAFKA_ONBOARDING_OUTCOME_SESSION_TIMEOUT: "30000"
   SCHEDULER_FIXED_DELAY: "10000"
   THREADS_SCHEDULE_MAX_NUMBER: "1"
-  ALLOWED_PRODUCER_TOPICS: '{"prod-fd": "selfcare-fd"}'
+  ALLOWED_PRODUCER_TOPICS: '{"prod-fd": "selfcare-fd", "prod-fd-garantito": "selfcare-fd"}'

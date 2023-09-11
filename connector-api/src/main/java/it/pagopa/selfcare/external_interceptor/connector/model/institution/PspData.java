@@ -10,6 +10,6 @@ public class PspData {
     private String legalRegisterNumber;
     private String abiCode;
     private Boolean vatNumberGroup;
-    private DpoData dpoData;
+    private DpoData dpoData;//fixme: needs to be removed
 
 }

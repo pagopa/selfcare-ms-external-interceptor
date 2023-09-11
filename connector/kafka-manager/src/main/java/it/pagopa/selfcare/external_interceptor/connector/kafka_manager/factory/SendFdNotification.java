@@ -43,7 +43,7 @@ public class SendFdNotification extends KafkaSend {
             String institutionNotification = mapper.writeValueAsString(notificationToSend);
             String topic = producerAllowedTopics.get().get(notification.getProduct());
             String logSuccess = String.format("sent notification for token : %s, to FD", notification.getOnboardingTokenId());
-            String logFailure = String.format("error during notification sending for token %s: {}, on FD ", notification.getOnboardingTokenId());
+            String logFailure = String.format("error during notification sending for token: %s, on FD ", notification.getOnboardingTokenId());
             sendNotification(institutionNotification, topic, logSuccess, logFailure, acknowledgment);
         }
         log.trace("sendInstitutionNotification end");
