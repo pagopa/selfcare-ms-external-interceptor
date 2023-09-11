@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 @Slf4j
 @Component
-public class LogRequestInterceptor implements HandlerInterceptor {
+public class ExternalInterceptorLogRequestInterceptor implements HandlerInterceptor {
     private static final Collection<String> URI_PREFIX_WHITELIST = List.of(
             "/swagger",
             "/v3/api-docs"
