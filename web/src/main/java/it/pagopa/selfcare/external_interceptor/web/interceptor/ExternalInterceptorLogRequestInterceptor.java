@@ -24,7 +24,6 @@ public class ExternalInterceptorLogRequestInterceptor implements HandlerIntercep
         if (!skipLog) {
             log.info("Requested {} {}, server Id: {}, controller: {}", request.getMethod(), request.getRequestURI(), request.getServerName(), controller.toString());
         }
-
         return true;
     }
 }
