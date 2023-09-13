@@ -6,5 +6,6 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @Import(BaseWebConfig.class)
-class WebConfig {
+class WebConfig{
+
 }

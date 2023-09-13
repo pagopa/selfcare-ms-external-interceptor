@@ -13,8 +13,8 @@ public class InstitutionToSend {
     private String originId;
     private String taxCode;
     private String zipCode;
-    private String fileName;
-    private String contentType;
+    private String fileName;//fixme: needs to be moved the the upper class
+    private String contentType;//fixme: ditto
     private PspData paymentServiceProvider;
     private String istatCode;
     private String city;

@@ -16,6 +16,8 @@ public class NotificationToSend {
     private String updatedAt;
     private NotificationType type;
     private InstitutionToSend institution;
+    private String fileName;
+    private String contentType;
     private Billing billing;
     private UserToSend user;
 

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class KafkaSendStrategyFactoryImpl implements KafkaSendStrategyFactory{
+public class KafkaSendStrategyFactoryImpl implements KafkaSendStrategyFactory {
 
     private final SendFdNotification fdNotification;
 
@@ -16,8 +16,9 @@ public class KafkaSendStrategyFactoryImpl implements KafkaSendStrategyFactory{
     @Override
     public KafkaSendService create(String productId) {
         final KafkaSendService service;
-        switch (productId){
+        switch (productId) {
             case "prod-fd":
+            case "prod-fd-garantito":
                 service = this.fdNotification;
                 break;
             default:
