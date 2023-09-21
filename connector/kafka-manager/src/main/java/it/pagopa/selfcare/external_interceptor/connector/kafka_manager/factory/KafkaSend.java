@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.util.Optional;
+
 @Slf4j
 @Scope("prototype")
 @Service
@@ -29,7 +31,7 @@ public abstract class KafkaSend implements KafkaSendService {
         this.registryProxyConnector = registryProxyConnector;
     }
 
-    void sendNotification(String message, String topic, String successLog, String logFailure, Acknowledgment acknowledgment) {
+    void sendNotification(String message, String topic, String successLog, String logFailure, Optional<Acknowledgment> acknowledgment) {
         log.trace("sendNotification start");
         log.debug(LogUtils.CONFIDENTIAL_MARKER, "send notification message = {}, to topic: {}", message, topic);
         ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, message);
@@ -37,13 +39,13 @@ public abstract class KafkaSend implements KafkaSendService {
             @Override
             public void onSuccess(SendResult<String, String> result) {
                 log.info(successLog);
-                acknowledgment.acknowledge();
+                acknowledgment.get().acknowledge();
             }
 
             @Override
             public void onFailure(Throwable ex) {
                 log.warn(logFailure, ex.getMessage(), ex);
-                acknowledgment.nack(60000);
+                acknowledgment.get().nack(60000);
             }
         });
         log.trace("sendNotification end");

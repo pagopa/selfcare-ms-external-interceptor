@@ -20,6 +20,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @Qualifier("sapNotificator")
@@ -70,7 +72,7 @@ public class SendSapNotification extends KafkaSend {
         String institutionNotification = mapper.writeValueAsString(notificationToSend);
         String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
         String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-        sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, acknowledgment);
+        sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, Optional.of(acknowledgment));
         log.trace("sendInstitutionNotification end");
 
     }
