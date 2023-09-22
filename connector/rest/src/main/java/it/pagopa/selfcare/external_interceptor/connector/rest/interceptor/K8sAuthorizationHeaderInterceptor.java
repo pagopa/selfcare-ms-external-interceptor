@@ -5,11 +5,11 @@ import feign.RequestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
 @Slf4j
-public class RegistryProxyAuthorizationHeaderInterceptor implements RequestInterceptor {
+@Component
+public class K8sAuthorizationHeaderInterceptor implements RequestInterceptor {
 
     @Value("${authorization.k8s.token}")
     private String k8sAuthorizationToken;

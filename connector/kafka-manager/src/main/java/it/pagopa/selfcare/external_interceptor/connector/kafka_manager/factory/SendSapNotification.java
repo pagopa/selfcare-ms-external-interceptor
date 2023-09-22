@@ -3,6 +3,7 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
+import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
@@ -32,8 +33,9 @@ public class SendSapNotification extends KafkaSend {
                                KafkaTemplate<String, String> kafkaTemplate,
                                NotificationMapper notificationMapper,
                                ObjectMapper mapper,
-                               RegistryProxyConnector registryProxyConnector) {
-        super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector);
+                               RegistryProxyConnector registryProxyConnector,
+                               ExternalApiConnector externalApiConnector) {
+        super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
     }
 
     @Override

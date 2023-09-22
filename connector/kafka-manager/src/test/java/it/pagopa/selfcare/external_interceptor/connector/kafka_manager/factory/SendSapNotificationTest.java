@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
@@ -82,6 +83,7 @@ class SendSapNotificationTest {
     private SendSapNotification service;
 
     private RegistryProxyConnector registryProxyConnector;
+    private ExternalApiConnector externalApiConnector;
     AutoCloseable closeable;
 
     @Mock
@@ -96,7 +98,8 @@ class SendSapNotificationTest {
         mockFuture = mock(ListenableFuture.class);
         mockSendResult = mock(SendResult.class);
         registryProxyConnector = mock(RegistryProxyConnector.class);
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector);
+        externalApiConnector = mock(ExternalApiConnector.class);
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector);
     }
 
     @AfterEach

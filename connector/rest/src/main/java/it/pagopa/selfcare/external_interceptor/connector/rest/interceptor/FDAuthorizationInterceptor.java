@@ -7,10 +7,10 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.model.EncodedParam
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@Service
+@Component
 public class FDAuthorizationInterceptor implements RequestInterceptor {
 
     private final FDTokenRestClient fdRestClient;

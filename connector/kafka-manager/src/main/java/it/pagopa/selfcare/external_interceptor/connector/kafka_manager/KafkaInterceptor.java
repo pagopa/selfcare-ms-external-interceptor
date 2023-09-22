@@ -66,7 +66,11 @@ public class KafkaInterceptor {
 
         try {
             UserNotification notification = mapper.readValue(inboundRecord.value(), UserNotification.class);
+            if (notification.getProductId() == null){
+                notification.setProductId("prod-fd");
+            }
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProductId());
+
             if (sendService != null)
                 sendService.sendUserNotification(notification, acknowledgment);
         } catch (JsonProcessingException e) {

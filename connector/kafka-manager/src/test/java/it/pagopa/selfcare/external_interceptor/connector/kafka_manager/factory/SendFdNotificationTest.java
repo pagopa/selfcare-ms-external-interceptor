@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
@@ -77,6 +78,7 @@ class SendFdNotificationTest {
     private ListenableFuture mockFuture;
     private SendResult<String, String> mockSendResult;
     private Acknowledgment acknowledgment;
+    private ExternalApiConnector externalApiConnector;
 
     private SendFdNotification service;
 
@@ -101,7 +103,8 @@ class SendFdNotificationTest {
         mockFuture = mock(ListenableFuture.class);
         acknowledgment = mock(Acknowledgment.class);
         mockSendResult = mock(SendResult.class);
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        externalApiConnector = mock(ExternalApiConnector.class);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
     }
 
     @AfterEach
@@ -224,7 +227,7 @@ class SendFdNotificationTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
         allowedTopics = null;
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
         //when
         assertDoesNotThrow(
                 () -> service.sendInstitutionNotification(notification, acknowledgment)
@@ -258,7 +261,7 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         allowedTopics = null;
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
         //when
         assertDoesNotThrow(
                 () -> service.sendUserNotification(notification, acknowledgment)
