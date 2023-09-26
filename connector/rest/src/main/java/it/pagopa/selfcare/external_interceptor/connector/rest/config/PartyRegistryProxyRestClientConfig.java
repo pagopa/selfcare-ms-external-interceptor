@@ -1,13 +1,11 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.config;
 
-import it.pagopa.selfcare.external_interceptor.connector.rest.client.PartyRegistryProxyRestClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import it.pagopa.selfcare.external_interceptor.connector.rest.interceptor.K8sAuthorizationHeaderInterceptor;
+import org.springframework.context.annotation.Bean;
 
-@Configuration
-//@Import(RestClientBaseConfig.class)
-@EnableFeignClients(clients = PartyRegistryProxyRestClient.class)
-@PropertySource("classpath:config/registry-proxy-rest-client.properties")
 public class PartyRegistryProxyRestClientConfig {
+    @Bean
+    public K8sAuthorizationHeaderInterceptor partyRegistryK8sAuthorizationRequestInterceptor(){
+        return new K8sAuthorizationHeaderInterceptor();
+    }
 }

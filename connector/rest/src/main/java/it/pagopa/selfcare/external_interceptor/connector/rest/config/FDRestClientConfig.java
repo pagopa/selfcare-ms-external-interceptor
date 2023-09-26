@@ -1,14 +1,19 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.config;
 
-import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDRestClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import it.pagopa.selfcare.external_interceptor.connector.rest.client.FDTokenRestClient;
+import it.pagopa.selfcare.external_interceptor.connector.rest.interceptor.FDAuthorizationInterceptor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 
-
-@Configuration
-//@Import(RestClientBaseConfig.class)
-@EnableFeignClients(clients = FDRestClient.class)
-@PropertySource("classpath:config/prod-fd-rest-client.properties")
 public class FDRestClientConfig {
+    @Value("${external-interceptor.fd-token.grant-type}")
+    private String grantType;
+    @Value("${external-interceptor.fd-token.client-id}")
+    private String clientId;
+    @Value("${external-interceptor.fd-token.client-secret}")
+    private String clientSecret;
+    @Bean
+    public FDAuthorizationInterceptor fdAuthorizationInterceptor(FDTokenRestClient tokenRestClient){
+        return new FDAuthorizationInterceptor(tokenRestClient, grantType, clientId, clientSecret);
+    }
 }
