@@ -44,6 +44,7 @@ import java.util.TimeZone;
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -302,4 +303,29 @@ class SendFdNotificationTest {
         NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType");
     }
+
+    @Test
+    void updateUserEvent_JsonException() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+
+        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertThrows(RuntimeException.class, executable);
+        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+    }
+
 }
