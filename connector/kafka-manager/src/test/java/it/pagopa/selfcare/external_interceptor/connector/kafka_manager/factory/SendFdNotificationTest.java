@@ -328,4 +328,25 @@ class SendFdNotificationTest {
         verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
     }
 
+    @Test
+    void sendUpdateUser_emptyDetails() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        userProductDetails.setOnboardedProductDetails(null);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+        verifyNoInteractions(kafkaTemplate);
+    }
+
 }

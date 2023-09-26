@@ -62,8 +62,10 @@ public class SendFdNotification extends KafkaSend {
             NotificationToSend notificationToSend = notificationMapper.createUserNotification(userNotification);
             if (userNotification.getEventType().equals(QueueEvent.UPDATE) && userNotification.getUser().getRelationshipStatus() == null) {
                 UserProductDetails userProduct = externalApiConnector.getUserOnboardedProductDetails(userNotification.getUser().getUserId(), userNotification.getInstitutionId(), userNotification.getProductId());
-                sendUpdateUserEvents(notificationToSend, userProduct);
-                acknowledgment.acknowledge();
+                if(userProduct.getOnboardedProductDetails() != null) {
+                    sendUpdateUserEvents(notificationToSend, userProduct);
+                    acknowledgment.acknowledge();
+                }
             } else {
                 notificationToSend.setType(NotificationType.getNotificationTypeFromRelationshipState(userNotification.getUser().getRelationshipStatus()));
                 String userNotificationToSend = mapper.writeValueAsString(notificationToSend);
