@@ -14,11 +14,10 @@ import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billi
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
+import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.QueueEvent;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotify;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -268,5 +267,39 @@ class SendFdNotificationTest {
         );
         //then
         verifyNoInteractions(kafkaTemplate);
+    }
+
+    @Test
+    void updateUserEvents() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+        verify(kafkaTemplate, times(2)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType");
     }
 }

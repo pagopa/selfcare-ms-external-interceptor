@@ -42,13 +42,13 @@ public abstract class KafkaSend implements KafkaSendService {
             @Override
             public void onSuccess(SendResult<String, String> result) {
                 log.info(successLog);
-                acknowledgment.get().acknowledge();
+                acknowledgment.ifPresent(Acknowledgment::acknowledge);
             }
 
             @Override
             public void onFailure(Throwable ex) {
                 log.warn(logFailure, ex.getMessage(), ex);
-                acknowledgment.get().nack(60000);
+                acknowledgment.ifPresent(value -> value.nack(60000));
             }
         });
         log.trace("sendNotification end");
