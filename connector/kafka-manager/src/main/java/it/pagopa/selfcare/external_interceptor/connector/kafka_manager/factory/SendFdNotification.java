@@ -49,7 +49,7 @@ public class SendFdNotification extends KafkaSend {
             String topic = producerAllowedTopics.get().get(notification.getProduct());
             String logSuccess = String.format("sent notification for token : %s, to FD", notification.getOnboardingTokenId());
             String logFailure = String.format("error during notification sending for token: %s, on FD ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, topic, logSuccess, logFailure, Optional.of(acknowledgment));
+//            sendNotification(institutionNotification, topic, logSuccess, logFailure, Optional.of(acknowledgment));
         }
         log.trace("sendInstitutionNotification end");
     }
@@ -70,7 +70,7 @@ public class SendFdNotification extends KafkaSend {
                 String topic = producerAllowedTopics.get().get(userNotification.getProductId());
                 String logSuccess = String.format("sent notification for user : %s, to FD", userNotification.getUser().getUserId());
                 String logFailure = String.format("error during notification sending for user %s: {}, on FD ", userNotification.getUser().getUserId());
-                sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.of(acknowledgment));
+//                sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.of(acknowledgment));
             }
         }
         log.trace("sendUserNotification end");
@@ -97,7 +97,7 @@ public class SendFdNotification extends KafkaSend {
             String topic = producerAllowedTopics.get().get(notification.getProduct());
             String logSuccess = String.format("sent notification for user : %s, to FD", notification.getUser().getUserId());
             String logFailure = String.format("error during notification sending for user %s: {}, on FD ", notification.getUser().getUserId());
-            sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.empty());
+//            sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.empty());
         });
         log.trace("sendUpdateUserEvents End");
     }
