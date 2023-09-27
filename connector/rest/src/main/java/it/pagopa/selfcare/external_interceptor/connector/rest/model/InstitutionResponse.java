@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.model;
 
+import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.DpoData;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.GeographicTaxonomy;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.PspData;
