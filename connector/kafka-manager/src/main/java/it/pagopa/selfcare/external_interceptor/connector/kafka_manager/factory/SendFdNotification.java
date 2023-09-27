@@ -27,6 +27,8 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class SendFdNotification extends KafkaSend {
+    private static final String ERROR_DURING_NOTIFICATION_SENDING_FOR_USER_S_ON_FD = "error during notification sending for user %s: {}, on FD ";
+    private static final String SENT_NOTIFICATION_FOR_USER_S_TO_FD = "sent notification for user : %s, to FD";
     private final Optional<Map<String, String>> producerAllowedTopics;
 
     public SendFdNotification(@Value("#{${external-interceptor.producer-topics}}") Map<String, String> producerAllowedTopics, @Autowired
@@ -70,8 +72,8 @@ public class SendFdNotification extends KafkaSend {
                 notificationToSend.setType(NotificationType.getNotificationTypeFromRelationshipState(userNotification.getUser().getRelationshipStatus()));
                 String userNotificationToSend = mapper.writeValueAsString(notificationToSend);
                 String topic = producerAllowedTopics.get().get(userNotification.getProductId());
-                String logSuccess = String.format("sent notification for user : %s, to FD", userNotification.getUser().getUserId());
-                String logFailure = String.format("error during notification sending for user %s: {}, on FD ", userNotification.getUser().getUserId());
+                String logSuccess = String.format(SENT_NOTIFICATION_FOR_USER_S_TO_FD, userNotification.getUser().getUserId());
+                String logFailure = String.format(ERROR_DURING_NOTIFICATION_SENDING_FOR_USER_S_ON_FD, userNotification.getUser().getUserId());
                 sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.of(acknowledgment));
             }
         }
@@ -97,8 +99,8 @@ public class SendFdNotification extends KafkaSend {
                 throw new RuntimeException(e);
             }
             String topic = producerAllowedTopics.get().get(notification.getProduct());
-            String logSuccess = String.format("sent notification for user : %s, to FD", notification.getUser().getUserId());
-            String logFailure = String.format("error during notification sending for user %s: {}, on FD ", notification.getUser().getUserId());
+            String logSuccess = String.format(SENT_NOTIFICATION_FOR_USER_S_TO_FD, notification.getUser().getUserId());
+            String logFailure = String.format(ERROR_DURING_NOTIFICATION_SENDING_FOR_USER_S_ON_FD, notification.getUser().getUserId());
             sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.empty());
         });
         log.trace("sendUpdateUserEvents End");

@@ -6,6 +6,7 @@ import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendService;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendSapNotification;
+import it.pagopa.selfcare.external_interceptor.connector.model.constant.ProductId;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +68,7 @@ public class KafkaInterceptor {
         try {
             UserNotification notification = mapper.readValue(inboundRecord.value(), UserNotification.class);
             if (notification.getProductId() == null){
-                notification.setProductId("prod-fd");
+                notification.setProductId(ProductId.PROD_FD.getValue());
             }
             KafkaSendService sendService = sendStrategyFactory.create(notification.getProductId());
 
