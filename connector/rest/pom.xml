@@ -16,6 +16,10 @@
             <artifactId>selc-commons-connector-rest</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
             <groupId>it.pagopa.selfcare</groupId>
             <artifactId>selc-commons-connector-rest</artifactId>
             <type>test-jar</type>

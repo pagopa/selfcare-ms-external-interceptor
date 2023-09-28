@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.client;
 
+import it.pagopa.selfcare.external_interceptor.connector.rest.config.InternalApiRestClientConfig;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -11,7 +12,7 @@ import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@FeignClient(name = "${rest-client.internal-api.serviceCode}", url = "${rest-client.internal-api.base-url}")
+@FeignClient(value = "${rest-client.internal-api.serviceCode}",name = "${rest-client.internal-api.serviceCode}", url = "${rest-client.internal-api.base-url}", configuration = InternalApiRestClientConfig.class)
 public interface InternalApiRestClient {
 
     @GetMapping(value = "${rest-client.internal-api.getInstitution.path}", produces = MediaType.APPLICATION_JSON_VALUE)

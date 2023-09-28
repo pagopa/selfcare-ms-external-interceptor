@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
+import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import lombok.Data;
 
 import java.util.List;

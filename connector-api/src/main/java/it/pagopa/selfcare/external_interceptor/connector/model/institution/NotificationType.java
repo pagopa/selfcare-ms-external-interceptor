@@ -7,7 +7,7 @@ public enum NotificationType {
     UPDATE_INSTITUTION(null),
     ACTIVE_USER(RelationshipState.ACTIVE),
     SUSPEND_USER(RelationshipState.SUSPENDED),
-    DELETE_USER(RelationshipState.ACTIVE);
+    DELETE_USER(RelationshipState.DELETED);
 
     private RelationshipState relationshipState;
     private NotificationType(RelationshipState relationshipState){

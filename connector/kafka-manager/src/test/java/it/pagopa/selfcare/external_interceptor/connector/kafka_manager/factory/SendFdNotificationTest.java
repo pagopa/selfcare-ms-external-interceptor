@@ -9,15 +9,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.NotificationToSend;
+import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.QueueEvent;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
-import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotify;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +44,7 @@ import java.util.TimeZone;
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -77,6 +78,7 @@ class SendFdNotificationTest {
     private ListenableFuture mockFuture;
     private SendResult<String, String> mockSendResult;
     private Acknowledgment acknowledgment;
+    private ExternalApiConnector externalApiConnector;
 
     private SendFdNotification service;
 
@@ -101,7 +103,8 @@ class SendFdNotificationTest {
         mockFuture = mock(ListenableFuture.class);
         acknowledgment = mock(Acknowledgment.class);
         mockSendResult = mock(SendResult.class);
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        externalApiConnector = mock(ExternalApiConnector.class);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
     }
 
     @AfterEach
@@ -224,7 +227,7 @@ class SendFdNotificationTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
         allowedTopics = null;
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
         //when
         assertDoesNotThrow(
                 () -> service.sendInstitutionNotification(notification, acknowledgment)
@@ -258,7 +261,7 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         allowedTopics = null;
-        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper);
+        service = new SendFdNotification(allowedTopics, kafkaTemplate, notificationMapperSpy, mapper, externalApiConnector);
         //when
         assertDoesNotThrow(
                 () -> service.sendUserNotification(notification, acknowledgment)
@@ -266,4 +269,84 @@ class SendFdNotificationTest {
         //then
         verifyNoInteractions(kafkaTemplate);
     }
+
+    @Test
+    void updateUserEvents() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+        when(kafkaTemplate.send(any(), any()))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+        verify(kafkaTemplate, times(2)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
+        checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType");
+    }
+
+    @Test
+    void updateUserEvent_JsonException() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+
+        when(mapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertThrows(RuntimeException.class, executable);
+        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+    }
+
+    @Test
+    void sendUpdateUser_emptyDetails() throws JsonProcessingException {
+        //given
+        final UserNotification notification = mockInstance(new UserNotification());
+        notification.setEventType(QueueEvent.UPDATE);
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(null);
+        notification.setUser(userNotify);
+        notification.setProductId("prod-fd");
+        UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
+        userProductDetails.setOnboardedProductDetails(null);
+
+        when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
+        //when
+        Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
+        verifyNoInteractions(kafkaTemplate);
+    }
+
 }

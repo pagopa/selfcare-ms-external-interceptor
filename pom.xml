@@ -16,7 +16,7 @@
     <name>selc-external-interceptor</name>
     <description>Microservice to manage Self Care events for external Products</description>
     <properties>
-        <selc-commons.version>2.4.4</selc-commons.version>
+        <selc-commons.version>2.4.7</selc-commons.version>
     </properties>
 
     <dependencyManagement>

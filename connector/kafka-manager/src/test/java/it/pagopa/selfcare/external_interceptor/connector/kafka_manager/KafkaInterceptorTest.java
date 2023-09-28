@@ -240,6 +240,28 @@ class KafkaInterceptorTest {
         verify(sendStrategyFactory, times(1)).create("prod-io");
         verifyNoInteractions(fdNotificationService);
     }
+    @Test
+    void interceptUser_nullProduct(){
+        final UserNotification notification = mockInstance(new UserNotification());
+        final UserNotify userNotify = mockInstance(new UserNotify());
+        userNotify.setRelationshipStatus(RelationshipState.ACTIVE);
+        notification.setUser(userNotify);
+        notification.setProductId(null);
+        Acknowledgment acknowledgment = new Acknowledgment() {
+            @Override
+            public void acknowledge() {
+
+            }
+        };
+        when(sendStrategyFactory.create(any())).thenReturn(null);
+        //when
+        assertDoesNotThrow(
+                () -> interceptor.interceptUsers(new ConsumerRecord<>("sc-users", 0, 0, "notification", objectMapper.writeValueAsString(notification)),acknowledgment)
+        );
+        //then
+        verify(sendStrategyFactory, times(1)).create("prod-fd");
+        verifyNoInteractions(fdNotificationService);
+    }
 
     @Test
     void interceptInstitutionSap() throws JsonProcessingException {
@@ -290,4 +312,6 @@ class KafkaInterceptorTest {
         //then
         verifyNoInteractions( fdNotificationService, sendStrategyFactory);
     }
+
+
 }
