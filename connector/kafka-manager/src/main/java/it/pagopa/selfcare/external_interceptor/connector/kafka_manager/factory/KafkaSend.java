@@ -43,7 +43,6 @@ public abstract class KafkaSend implements KafkaSendService {
             public void onSuccess(SendResult<String, String> result) {
                 log.info(successLog);
                 acknowledgment.ifPresent(Acknowledgment::acknowledge);
-                kafkaTemplate.flush();
             }
 
             @Override
