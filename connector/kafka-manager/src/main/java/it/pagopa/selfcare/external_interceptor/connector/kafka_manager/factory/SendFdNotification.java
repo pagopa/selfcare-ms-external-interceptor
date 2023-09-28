@@ -20,6 +20,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +93,7 @@ public class SendFdNotification extends KafkaSend {
         eventTypes.forEach(type -> {
             notification.setType(type);
             notification.setUser(userToSend);
+            notification.setUpdatedAt(OffsetDateTime.now().toString());
             String userNotificationToSend = null;
             try {
                 userNotificationToSend = mapper.writeValueAsString(notification);
@@ -102,6 +104,7 @@ public class SendFdNotification extends KafkaSend {
             String logSuccess = String.format(SENT_NOTIFICATION_FOR_USER_S_TO_FD, notification.getUser().getUserId());
             String logFailure = String.format(ERROR_DURING_NOTIFICATION_SENDING_FOR_USER_S_ON_FD, notification.getUser().getUserId());
             sendNotification(userNotificationToSend, topic, logSuccess, logFailure, Optional.empty());
+
         });
         log.trace("sendUpdateUserEvents End");
     }
