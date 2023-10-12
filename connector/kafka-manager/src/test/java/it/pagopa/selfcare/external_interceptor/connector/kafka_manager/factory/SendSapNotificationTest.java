@@ -99,7 +99,7 @@ class SendSapNotificationTest {
         mockSendResult = mock(SendResult.class);
         registryProxyConnector = mock(RegistryProxyConnector.class);
         externalApiConnector = mock(ExternalApiConnector.class);
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector);
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, null);
     }
 
     @AfterEach
