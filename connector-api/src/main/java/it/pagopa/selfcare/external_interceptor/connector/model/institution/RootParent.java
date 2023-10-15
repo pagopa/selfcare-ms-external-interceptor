@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RootParent {
     private String id;
+    private String originId;
     private String description;
 }

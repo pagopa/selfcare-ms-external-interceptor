@@ -1,8 +1,10 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest;
 
 import it.pagopa.selfcare.external_interceptor.connector.api.MsCoreConnector;
+import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.ms_core.Token;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.MsCoreRestClient;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.MsCoreMapper;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.ms_core.TokensResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -33,5 +35,15 @@ public class MsCoreConnectorImpl implements MsCoreConnector {
         log.debug("retrieveTokensByProductId result = {}", tokens);
         log.trace("retrieveTokensByProductId end");
         return tokens;
+    }
+
+    @Override
+    public Institution getInstitutionById(String institutionId){
+        log.trace("getInstitutionById start");
+        log.debug("getInstitutionById institutionId = {}", institutionId);
+        InstitutionResponse institutionResponse = restClient.getInstitutionById(institutionId);
+        Institution institution = msCoreMapper.toInstitution(institutionResponse);
+        log.debug("getInstitutionById result = {}", institution);
+        return institution;
     }
 }

@@ -8,8 +8,8 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.client.PartyRegist
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.AooResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.GeographicTaxonomiesResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.UoResponse;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.EntityMapper;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.EntityMapperImpl;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.RegistryProxyMapper;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.RegistryProxyMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ class PartyRegistryProxyConnectorImplTest {
     private PartyRegistryProxyRestClient partyRegistryProxyRestClient;
 
     @Spy
-    EntityMapper entityMapper = new EntityMapperImpl();
+    RegistryProxyMapper entityMapper = new RegistryProxyMapperImpl();
 
     private final static AooResponse aooResponse;
     private final static UoResponse uoResponse;

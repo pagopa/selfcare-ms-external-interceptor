@@ -12,4 +12,6 @@ public interface InstitutionResponseMapper {
     @Mapping(target = "companyInformations.shareCapital", source = "shareCapital" )
     @Mapping(target = "companyInformations.businessRegisterPlace", source = "businessRegisterPlace" )
     Institution toInstitution(InstitutionResponse response);
+
+
 }

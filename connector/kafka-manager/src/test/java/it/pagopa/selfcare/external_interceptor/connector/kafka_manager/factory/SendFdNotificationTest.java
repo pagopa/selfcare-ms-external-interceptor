@@ -280,8 +280,8 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
-        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+        OnboardedUserProduct onboardedUserProduct = mockInstance(new OnboardedUserProduct());
+        userProductDetails.setOnboardedUserProductDetails(onboardedUserProduct);
 
         when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
         when(kafkaTemplate.send(any(), any()))
@@ -314,8 +314,8 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
-        OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        userProductDetails.setOnboardedProductDetails(onboardedProduct);
+        OnboardedUserProduct onboardedUserProduct = mockInstance(new OnboardedUserProduct());
+        userProductDetails.setOnboardedUserProductDetails(onboardedUserProduct);
 
         when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
 
@@ -338,7 +338,7 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
         UserProductDetails userProductDetails = mockInstance(new UserProductDetails());
-        userProductDetails.setOnboardedProductDetails(null);
+        userProductDetails.setOnboardedUserProductDetails(null);
 
         when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
         //when

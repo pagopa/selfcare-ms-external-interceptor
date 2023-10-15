@@ -15,7 +15,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Value("${scheduler.threads.max-number}")
     private int maxScheduleThreadNumber;
-
+    @Value("${scheduler.fixed-delay.delay}")
+    private Long fixedDelay;
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
@@ -31,6 +32,10 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     public void setScheduler(boolean sendOldEvent) {
         this.sendOldEvent = sendOldEvent;
+    }
+
+    public Long getFixedDelay(){
+        return fixedDelay;
     }
 
 }

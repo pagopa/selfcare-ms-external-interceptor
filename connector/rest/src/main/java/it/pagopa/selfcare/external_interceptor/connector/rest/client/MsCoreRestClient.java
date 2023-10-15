@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.client;
 
 import it.pagopa.selfcare.external_interceptor.connector.rest.config.MsCoreRestClientConfig;
+import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.ms_core.TokensResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,4 +15,7 @@ public interface MsCoreRestClient {
     TokensResponse retrieveTokensByProduct(@PathVariable(value = "productId")String productId,
                                           @RequestParam(name = "page")Integer page,
                                           @RequestParam(name = "size")Integer size);
+
+    @GetMapping(value = "${rest-client.ms-core.getInstitutionById.path}")
+    InstitutionResponse getInstitutionById(@PathVariable(value = "id")String institutionId);
 }

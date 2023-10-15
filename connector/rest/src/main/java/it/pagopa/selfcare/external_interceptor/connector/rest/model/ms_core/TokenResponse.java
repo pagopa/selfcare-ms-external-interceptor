@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 @Data
@@ -22,16 +21,16 @@ public class TokenResponse {
     private RelationshipState status;
     private String institutionId;
     private String productId;
-    private OffsetDateTime expiringDate;
+    private String expiringDate;
     private String contractVersion;
     private String contractTemplate;
     private String contractSigned;
     private String contentType;
     private List<TokenUserResponse> users;
     private InstitutionUpdate institutionUpdate;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
-    private OffsetDateTime closedAt;
+    private String createdAt;
+    private String updatedAt;
+    private String closedAt;
 
     public TokenResponse(String id) {
         this.id = id;

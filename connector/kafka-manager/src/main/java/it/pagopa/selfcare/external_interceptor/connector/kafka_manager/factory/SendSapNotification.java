@@ -30,7 +30,7 @@ import java.util.Set;
 @Slf4j
 @Service
 @Qualifier("sapNotificator")
-public class SendSapNotification extends KafkaSend implements KafkaSapSendService<Acknowledgment> {
+public class SendSapNotification extends KafkaSend implements KafkaSapSendService {
     static final String DESCRIPTION_TO_REPLACE_REGEX = " - COMUNE";
     private final Set<InstitutionType> excludedInstitutionTypes;
     public SendSapNotification(@Autowired
@@ -40,7 +40,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                                ObjectMapper mapper,
                                RegistryProxyConnector registryProxyConnector,
                                ExternalApiConnector externalApiConnector,
-                               @Value("external-interceptor.sap.excluded-institution-types") Set<InstitutionType> excludedInstitutionTypes) {
+                               @Value("${external-interceptor.sap.excluded-institution-types}") Set<InstitutionType> excludedInstitutionTypes) {
         super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
         this.excludedInstitutionTypes = excludedInstitutionTypes;
     }
@@ -82,7 +82,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
             String institutionNotification = mapper.writeValueAsString(notificationToSend);
             String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
             String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, Optional.of(acknowledgment));
+            sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, Optional.ofNullable(acknowledgment));
             log.trace("sendInstitutionNotification end");
         }
     }
@@ -92,4 +92,8 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
 
     }
 
+    @Override
+    public void sendOldEvents(Notification notification) throws JsonProcessingException {
+        sendInstitutionNotification(notification, null);
+    }
 }
