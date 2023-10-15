@@ -11,6 +11,8 @@ public interface InstitutionResponseMapper {
     @Mapping(target = "companyInformations.rea", source = "rea" )
     @Mapping(target = "companyInformations.shareCapital", source = "shareCapital" )
     @Mapping(target = "companyInformations.businessRegisterPlace", source = "businessRegisterPlace" )
+    @Mapping(target = "subUnitType", source = "subunitType")
+    @Mapping(target = "subUnitCode", source = "subunitCode")
     Institution toInstitution(InstitutionResponse response);
 
 

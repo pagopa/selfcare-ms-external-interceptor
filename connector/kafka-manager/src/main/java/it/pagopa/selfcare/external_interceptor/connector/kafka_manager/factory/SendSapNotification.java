@@ -32,7 +32,7 @@ import java.util.Set;
 @Qualifier("sapNotificator")
 public class SendSapNotification extends KafkaSend implements KafkaSapSendService {
     static final String DESCRIPTION_TO_REPLACE_REGEX = " - COMUNE";
-    private final Set<InstitutionType> excludedInstitutionTypes;
+    private final Optional<Set<InstitutionType>> excludedInstitutionTypes;
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
                                KafkaTemplate<String, String> kafkaTemplate,
@@ -42,14 +42,14 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                                ExternalApiConnector externalApiConnector,
                                @Value("${external-interceptor.sap.excluded-institution-types}") Set<InstitutionType> excludedInstitutionTypes) {
         super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
-        this.excludedInstitutionTypes = excludedInstitutionTypes;
+        this.excludedInstitutionTypes = Optional.ofNullable(excludedInstitutionTypes);
     }
 
     @Override
     public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendInstitutionNotification start");
         log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
-        if (!excludedInstitutionTypes.contains(notification.getInstitution().getInstitutionType())) {
+        if (excludedInstitutionTypes.isPresent() && !excludedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType())) {
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
             try {
                 GeographicTaxonomies geographicTaxonomies = null;

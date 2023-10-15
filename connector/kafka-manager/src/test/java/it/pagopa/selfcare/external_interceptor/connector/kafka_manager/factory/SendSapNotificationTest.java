@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
@@ -39,6 +40,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.util.Set;
 import java.util.TimeZone;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
@@ -99,7 +101,7 @@ class SendSapNotificationTest {
         mockSendResult = mock(SendResult.class);
         registryProxyConnector = mock(RegistryProxyConnector.class);
         externalApiConnector = mock(ExternalApiConnector.class);
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, null);
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.SA));
     }
 
     @AfterEach
