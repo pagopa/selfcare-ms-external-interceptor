@@ -29,7 +29,7 @@ import java.util.Optional;
 public class SchedulerServiceImpl implements SchedulerService{
     private final MsCoreConnector msCoreConnector;
     public static final int TOKEN_PAGE_SIZE = 100;
-    private Optional<Integer> token_page_size_api = Optional.of(1);
+    private Optional<Integer> token_page_size_api = Optional.empty();
     private final KafkaSapSendService kafkaSapSendService;
     private final List<String> productsToRetrieve;
     private final ScheduledConfig configProperties;
@@ -70,6 +70,7 @@ public class SchedulerServiceImpl implements SchedulerService{
 
                 } while (nextPage);
             }
+            this.token_page_size_api = Optional.empty();
             configProperties.setScheduler(false);
         }
         log.info("Next scheduled check at {}", OffsetDateTime.now().plusSeconds(configProperties.getFixedDelay() / 1000));
