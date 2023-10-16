@@ -32,6 +32,7 @@ import java.util.Set;
 @Qualifier("sapNotificator")
 public class SendSapNotification extends KafkaSend implements KafkaSapSendService {
     static final String DESCRIPTION_TO_REPLACE_REGEX = " - COMUNE";
+    public static final String SC_CONTRACTS_SAP = "Sc-Contracts-Sap";
     private final Optional<Set<InstitutionType>> excludedInstitutionTypes;
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
@@ -82,7 +83,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
             String institutionNotification = mapper.writeValueAsString(notificationToSend);
             String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
             String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, "Sc-Contracts-Sap", logSuccess, logFailure, Optional.ofNullable(acknowledgment));
+            sendNotification(institutionNotification, SC_CONTRACTS_SAP, logSuccess, logFailure, Optional.ofNullable(acknowledgment));
             log.trace("sendInstitutionNotification end");
         }
     }
