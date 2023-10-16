@@ -1,8 +1,10 @@
 package it.pagopa.selfcare.external_interceptor.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.pagopa.selfcare.external_interceptor.connector.api.KafkaSapSendService;
 import it.pagopa.selfcare.external_interceptor.connector.api.MsCoreConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
+import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.InstitutionUpdate;
@@ -22,6 +24,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -47,7 +50,7 @@ class SchedulerServiceImplTest {
 
 
     @Test
-    void regenerateQueueNotification(){
+    void regenerateQueueNotification() throws JsonProcessingException {
         //given
         final Token token= mockInstance(new Token());
         final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
@@ -77,6 +80,50 @@ class SchedulerServiceImplTest {
         verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 1);
         verify(msCoreConnector, times(1)).getInstitutionById(token.getInstitutionId());
         verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
+        verify(sapSendService, times(1)).sendOldEvents(any());
         verify(registryProxyConnector, times(1)).getExtById(institutionProxyInfo.getIstatCode());
     }
+
+    @Test
+    void resourceNotFound() throws JsonProcessingException {
+        //given
+        final Token token= mockInstance(new Token());
+        final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
+        token.setInstitutionUpdate(institutionUpdate);
+        final Institution institution = mockInstance(new Institution());
+        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        final Billing billing = mockInstance(new Billing());
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        final String productId = "productId";
+
+        schedulerService = new SchedulerServiceImpl(msCoreConnector, sapSendService, List.of(productId), scheduledConfig, notificationMapper, registryProxyConnector);
+
+        final InstitutionProxyInfo institutionProxyInfo = mockInstance(new InstitutionProxyInfo());
+        final GeographicTaxonomies geographicTaxonomies = mockInstance(new GeographicTaxonomies());
+
+        when(msCoreConnector.getInstitutionById(anyString())).thenReturn(institution);
+        when(scheduledConfig.getSendOldEvent()).thenReturn(true);
+        when(msCoreConnector.retrieveTokensByProductId(anyString(), any(), any())).thenReturn(List.of(token));
+        when(registryProxyConnector.getInstitutionProxyById(anyString())).thenThrow(ResourceNotFoundException.class);
+
+        //when
+        Executable executable = () -> schedulerService.regenerateQueueNotifications();
+        //then
+        assertDoesNotThrow(executable);
+        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 1);
+        verify(msCoreConnector, times(1)).getInstitutionById(token.getInstitutionId());
+        verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
+        verify(sapSendService, times(1)).sendOldEvents(any());
+
+    }
+
+    @Test
+    void startScheduler(){
+        //when
+        schedulerService.startScheduler(Optional.of(1));
+        //then
+        verify(scheduledConfig,times(1)).setScheduler(true);
+    }
+
 }
