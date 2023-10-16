@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class OnboardedProduct {
+public class OnboardedUserProduct {
     private String productId;
     private PartyRole role;
     private List<String> roles;
