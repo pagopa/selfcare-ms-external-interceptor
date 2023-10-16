@@ -17,5 +17,5 @@ autoscaling:
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.selfcare.pagopa.it"
   MS_EXTERNAL_INTERCEPTOR_LOG_LEVEL: "INFO"
-  PRODUCTS_TO_RESEND: "prod-io","prod-io-sign","prod-interop","prod-pn"
+  PRODUCTS_TO_RESEND: "prod-io,prod-io-sign,prod-interop,prod-pn"
   SAP_EXCLUDED_INSTITUTION_TYPES: "SA"
