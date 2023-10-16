@@ -77,7 +77,8 @@ class SchedulerServiceImplTest {
         Executable executable = () -> schedulerService.regenerateQueueNotifications();
         //then
         assertDoesNotThrow(executable);
-        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 1);
+        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 100
+        );
         verify(msCoreConnector, times(1)).getInstitutionById(token.getInstitutionId());
         verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
         verify(sapSendService, times(1)).sendOldEvents(any());
@@ -111,7 +112,7 @@ class SchedulerServiceImplTest {
         Executable executable = () -> schedulerService.regenerateQueueNotifications();
         //then
         assertDoesNotThrow(executable);
-        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 1);
+        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 100);
         verify(msCoreConnector, times(1)).getInstitutionById(token.getInstitutionId());
         verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
         verify(sapSendService, times(1)).sendOldEvents(any());
