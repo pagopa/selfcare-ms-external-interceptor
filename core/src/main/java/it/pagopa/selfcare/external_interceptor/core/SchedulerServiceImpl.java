@@ -29,7 +29,7 @@ import java.util.Optional;
 public class SchedulerServiceImpl implements SchedulerService{
     private final MsCoreConnector msCoreConnector;
     public static final int TOKEN_PAGE_SIZE = 100;
-    private Optional<Integer> token_page_size_api;
+    private Optional<Integer> token_page_size_api = Optional.of(1);
     private final KafkaSapSendService kafkaSapSendService;
     private final List<String> productsToRetrieve;
     private final ScheduledConfig configProperties;
@@ -39,7 +39,9 @@ public class SchedulerServiceImpl implements SchedulerService{
     public SchedulerServiceImpl(MsCoreConnector msCoreConnector,
                                 KafkaSapSendService kafkaSapSendService,
                                 @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> productsToRetrieve,
-                                ScheduledConfig configProperties, NotificationMapper notificationMapper, RegistryProxyConnector partyRegistryProxyConnector) {
+                                ScheduledConfig configProperties,
+                                NotificationMapper notificationMapper,
+                                RegistryProxyConnector partyRegistryProxyConnector) {
         this.msCoreConnector = msCoreConnector;
         this.kafkaSapSendService = kafkaSapSendService;
         this.productsToRetrieve = productsToRetrieve;
