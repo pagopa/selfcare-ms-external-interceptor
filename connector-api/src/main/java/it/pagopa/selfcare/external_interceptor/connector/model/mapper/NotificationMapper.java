@@ -82,9 +82,8 @@ public interface NotificationMapper {
         if (token.getProductId() != null && institution.getOnboarding() != null) {
             OnboardedProduct onboarding = institution.getOnboarding().stream()
                     .filter(o -> token.getProductId().equalsIgnoreCase(o.getProductId()))
-                    .findFirst().orElse(null);
-            assert onboarding != null;
-            return onboarding.getBilling() != null ? onboarding.getBilling() : institution.getBilling();
+                    .findFirst().orElse(new OnboardedProduct());
+            return onboarding.getBilling() != null ? onboarding.getBilling() : institution.getBilling() != null? institution.getBilling(): null;
         }
         return null;
     }
