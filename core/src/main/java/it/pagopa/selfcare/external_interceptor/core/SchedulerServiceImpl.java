@@ -80,13 +80,11 @@ public class SchedulerServiceImpl implements SchedulerService{
 
     private void sendSapNotifications(List<Token> tokens) {
         tokens.forEach(token -> {
-            if(token.getStatus().equals(RelationshipState.ACTIVE)) {
+            if(RelationshipState.ACTIVE.equals(token.getStatus())) {
                 Institution institution = msCoreConnector.getInstitutionById(token.getInstitutionId());
                 RootParent rootParent = new RootParent();
                 rootParent.setDescription(institution.getParentDescription());
-                Notification toNotify = token.getStatus().equals(RelationshipState.ACTIVE)
-                        ? notificationMapper.toNotificationToSend(institution, token, QueueEvent.ADD)
-                        : notificationMapper.toNotificationToSend(institution, token, QueueEvent.UPDATE);
+                Notification toNotify = notificationMapper.toNotificationToSend(institution, token, QueueEvent.ADD);
                 try {
                     InstitutionProxyInfo institutionProxyInfo = partyRegistryProxyConnector.getInstitutionProxyById(institution.getExternalId());
                     institution.setIstatCode(institutionProxyInfo.getIstatCode());

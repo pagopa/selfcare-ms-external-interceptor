@@ -54,6 +54,7 @@ class SchedulerServiceImplTest {
     void regenerateQueueNotification() throws JsonProcessingException {
         //given
         final Token token= mockInstance(new Token());
+        token.setStatus(RelationshipState.ACTIVE);
         final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
         token.setInstitutionUpdate(institutionUpdate);
         final Institution institution = mockInstance(new Institution());
@@ -134,10 +135,6 @@ class SchedulerServiceImplTest {
         final String productId = "productId";
 
         schedulerService = new SchedulerServiceImpl(msCoreConnector, sapSendService, List.of(productId), scheduledConfig, notificationMapper, registryProxyConnector);
-
-        final InstitutionProxyInfo institutionProxyInfo = mockInstance(new InstitutionProxyInfo());
-        final GeographicTaxonomies geographicTaxonomies = mockInstance(new GeographicTaxonomies());
-
         //when
         Executable executable = () -> schedulerService.regenerateQueueNotifications();
         //then
