@@ -14,6 +14,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.mapper.Notificati
 import it.pagopa.selfcare.external_interceptor.connector.model.ms_core.Token;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.InstitutionProxyInfo;
+import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
 import it.pagopa.selfcare.external_interceptor.core.config.ScheduledConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,6 +118,31 @@ class SchedulerServiceImplTest {
         verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
         verify(sapSendService, times(1)).sendOldEvents(any());
 
+    }
+    @Test
+    void sendSapNotification_notActive( ) throws JsonProcessingException {
+        //given
+        final Token token= mockInstance(new Token());
+        token.setStatus(RelationshipState.PENDING);
+        final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
+        token.setInstitutionUpdate(institutionUpdate);
+        final Institution institution = mockInstance(new Institution());
+        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        final Billing billing = mockInstance(new Billing());
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        final String productId = "productId";
+
+        schedulerService = new SchedulerServiceImpl(msCoreConnector, sapSendService, List.of(productId), scheduledConfig, notificationMapper, registryProxyConnector);
+
+        final InstitutionProxyInfo institutionProxyInfo = mockInstance(new InstitutionProxyInfo());
+        final GeographicTaxonomies geographicTaxonomies = mockInstance(new GeographicTaxonomies());
+
+        //when
+        Executable executable = () -> schedulerService.regenerateQueueNotifications();
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(msCoreConnector, registryProxyConnector, notificationMapper, sapSendService);
     }
 
     @Test
