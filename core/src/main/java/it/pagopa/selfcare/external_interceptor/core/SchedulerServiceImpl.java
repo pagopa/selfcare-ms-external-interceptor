@@ -94,7 +94,7 @@ public class SchedulerServiceImpl implements SchedulerService{
                        institution.setCountry(geographicTaxonomies.getCountryAbbreviation());
                        institution.setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
                    } catch (ResourceNotFoundException e) {
-                       log.warn("Error while searching institution {} on IPA, {} ", institution.getExternalId(), e.getMessage());
+                       log.warn("[INSTITUTION NOT FOUND]Error while searching institution {}, {} ", institution.getExternalId(), e.getMessage());
                        institution.setIstatCode(null);
                    }
                    toNotify.setInstitution(institution);
