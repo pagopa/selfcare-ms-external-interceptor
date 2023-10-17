@@ -11,7 +11,7 @@ import it.pagopa.selfcare.external_interceptor.connector.rest.model.UoResponse;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface EntityMapper {
+public interface RegistryProxyMapper {
 
     GeographicTaxonomies toGeographicTaxonomies(GeographicTaxonomiesResponse entity);
 

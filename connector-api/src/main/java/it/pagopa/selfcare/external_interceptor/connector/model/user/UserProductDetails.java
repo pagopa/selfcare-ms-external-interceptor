@@ -6,5 +6,5 @@ import lombok.Data;
 public class UserProductDetails {
     private String id;
     private String institutionId;
-    private OnboardedProduct onboardedProductDetails;
+    private OnboardedUserProduct onboardedUserProductDetails;
 }

@@ -22,6 +22,9 @@
   "tags" : [ {
     "name" : "interceptor",
     "description" : "Interceptor operations"
+  }, {
+    "name" : "scheduler",
+    "description" : "Scheduler Controller"
   } ],
   "paths" : {
     "/interceptor/acknowledgment/{productId}/message/{messageId}/status/{status}" : {
@@ -145,6 +148,63 @@
         "responses" : {
           "200" : {
             "description" : "OK"
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ "global" ]
+        } ]
+      }
+    },
+    "/scheduler" : {
+      "post" : {
+        "tags" : [ "scheduler" ],
+        "summary" : "start",
+        "description" : "Service to start scheduler to resend old messages to sap",
+        "operationId" : "startUsingPOST",
+        "parameters" : [ {
+          "name" : "size",
+          "in" : "query",
+          "description" : "size",
+          "required" : false,
+          "style" : "form",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "202" : {
+            "description" : "Accepted"
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            }
           }
         },
         "security" : [ {

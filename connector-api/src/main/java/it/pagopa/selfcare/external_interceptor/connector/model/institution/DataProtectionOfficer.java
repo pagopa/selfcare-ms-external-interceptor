@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RootParent {
-    private String id;
-    private String originId;
-    private String description;
+public class DataProtectionOfficer {
+
+    private String address;
+    private String email;
+    private String pec;
+
 }

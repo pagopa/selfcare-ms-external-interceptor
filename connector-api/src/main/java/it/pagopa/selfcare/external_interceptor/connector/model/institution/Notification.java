@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
+import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.QueueEvent;
 import lombok.Data;
 
 @Data
@@ -18,4 +19,6 @@ public class Notification {
     private String updatedAt;
     private String createdAt;
     private String closedAt;
+    private QueueEvent notificationType;
+
 }
