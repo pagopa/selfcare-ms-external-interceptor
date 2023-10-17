@@ -81,27 +81,32 @@ public class SchedulerServiceImpl implements SchedulerService{
     private void sendSapNotifications(List<Token> tokens) {
         tokens.forEach(token -> {
             if(RelationshipState.ACTIVE.equals(token.getStatus())) {
-                Institution institution = msCoreConnector.getInstitutionById(token.getInstitutionId());
-                RootParent rootParent = new RootParent();
-                rootParent.setDescription(institution.getParentDescription());
-                Notification toNotify = notificationMapper.toNotificationToSend(institution, token, QueueEvent.ADD);
-                try {
-                    InstitutionProxyInfo institutionProxyInfo = partyRegistryProxyConnector.getInstitutionProxyById(institution.getExternalId());
-                    institution.setIstatCode(institutionProxyInfo.getIstatCode());
-                    GeographicTaxonomies geographicTaxonomies = partyRegistryProxyConnector.getExtById(institution.getIstatCode());
-                    institution.setCounty(geographicTaxonomies.getProvinceAbbreviation());
-                    institution.setCountry(geographicTaxonomies.getCountryAbbreviation());
-                    institution.setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
-                } catch (ResourceNotFoundException e) {
-                    log.warn("Error while searching institution {} on IPA, {} ", institution.getExternalId(), e.getMessage());
-                    institution.setIstatCode(null);
-                }
-                toNotify.setInstitution(institution);
-                try {
-                    kafkaSapSendService.sendOldEvents(toNotify);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+               try {
+                   Institution institution = msCoreConnector.getInstitutionById(token.getInstitutionId());
+                   RootParent rootParent = new RootParent();
+                   rootParent.setDescription(institution.getParentDescription());
+                   Notification toNotify = notificationMapper.toNotificationToSend(institution, token, QueueEvent.ADD);
+                   try {
+                       InstitutionProxyInfo institutionProxyInfo = partyRegistryProxyConnector.getInstitutionProxyById(institution.getExternalId());
+                       institution.setIstatCode(institutionProxyInfo.getIstatCode());
+                       GeographicTaxonomies geographicTaxonomies = partyRegistryProxyConnector.getExtById(institution.getIstatCode());
+                       institution.setCounty(geographicTaxonomies.getProvinceAbbreviation());
+                       institution.setCountry(geographicTaxonomies.getCountryAbbreviation());
+                       institution.setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+                   } catch (ResourceNotFoundException e) {
+                       log.warn("Error while searching institution {} on IPA, {} ", institution.getExternalId(), e.getMessage());
+                       institution.setIstatCode(null);
+                   }
+                   toNotify.setInstitution(institution);
+                   try {
+                       kafkaSapSendService.sendOldEvents(toNotify);
+                   } catch (JsonProcessingException e) {
+                       throw new RuntimeException(e);
+                   }
+               } catch (ResourceNotFoundException e){
+                   log.warn("Error while searching institution {} on IPA, {} ", token.getInstitutionId(), e.getMessage());
+               }
+
             }
         });
     }

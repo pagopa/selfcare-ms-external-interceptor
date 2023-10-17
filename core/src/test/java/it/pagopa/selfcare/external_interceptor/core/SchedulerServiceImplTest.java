@@ -88,7 +88,7 @@ class SchedulerServiceImplTest {
     }
 
     @Test
-    void resourceNotFound() throws JsonProcessingException {
+    void resourceNotFound_proxy() throws JsonProcessingException {
         //given
         final Token token= mockInstance(new Token());
         final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
@@ -119,6 +119,37 @@ class SchedulerServiceImplTest {
         verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getExternalId());
         verify(sapSendService, times(1)).sendOldEvents(any());
 
+    }
+
+    @Test
+    void resourceNotFound_msCore(){
+        //given
+        final Token token= mockInstance(new Token());
+        final InstitutionUpdate institutionUpdate = mockInstance(new InstitutionUpdate());
+        token.setInstitutionUpdate(institutionUpdate);
+        final Institution institution = mockInstance(new Institution());
+        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        final Billing billing = mockInstance(new Billing());
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        final String productId = "productId";
+
+        schedulerService = new SchedulerServiceImpl(msCoreConnector, sapSendService, List.of(productId), scheduledConfig, notificationMapper, registryProxyConnector);
+
+        final InstitutionProxyInfo institutionProxyInfo = mockInstance(new InstitutionProxyInfo());
+        final GeographicTaxonomies geographicTaxonomies = mockInstance(new GeographicTaxonomies());
+
+        when(msCoreConnector.getInstitutionById(anyString())).thenThrow(ResourceNotFoundException.class);
+        when(scheduledConfig.getSendOldEvent()).thenReturn(true);
+        when(msCoreConnector.retrieveTokensByProductId(anyString(), any(), any())).thenReturn(List.of(token));
+
+        //when
+        Executable executable = () -> schedulerService.regenerateQueueNotifications();
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(sapSendService, registryProxyConnector);
+        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 100);
+        verify(msCoreConnector, times(1)).getInstitutionById(token.getInstitutionId());
     }
     @Test
     void sendSapNotification_notActive( ) throws JsonProcessingException {
