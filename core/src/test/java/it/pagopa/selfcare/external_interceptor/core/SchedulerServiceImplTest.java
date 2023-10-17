@@ -133,13 +133,16 @@ class SchedulerServiceImplTest {
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         final String productId = "productId";
-
+        when(scheduledConfig.getSendOldEvent()).thenReturn(true);
+        when(msCoreConnector.retrieveTokensByProductId(anyString(), any(), any())).thenReturn(List.of(token));
         schedulerService = new SchedulerServiceImpl(msCoreConnector, sapSendService, List.of(productId), scheduledConfig, notificationMapper, registryProxyConnector);
         //when
         Executable executable = () -> schedulerService.regenerateQueueNotifications();
         //then
         assertDoesNotThrow(executable);
-        verifyNoInteractions(msCoreConnector, registryProxyConnector, notificationMapper, sapSendService);
+        verify(msCoreConnector, times(1)).retrieveTokensByProductId(productId, 0, 100);
+        verifyNoMoreInteractions(msCoreConnector);
+        verifyNoInteractions( registryProxyConnector, notificationMapper, sapSendService);
     }
 
     @Test
