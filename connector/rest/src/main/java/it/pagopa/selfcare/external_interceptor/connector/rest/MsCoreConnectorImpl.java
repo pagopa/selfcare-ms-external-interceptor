@@ -32,7 +32,7 @@ public class MsCoreConnectorImpl implements MsCoreConnector {
         log.debug("retrieveTokensByProductId productId = {}, page = {}, size = {}", productId, page, size);
         ResponseEntity<TokenListResponse> tokensResponse = restClient._findFromProductUsingGET1(productId, page, size);
         List<Token> tokens = Objects.requireNonNull(tokensResponse.getBody()).getItems().stream()
-                .map(tokenResponse -> msCoreMapper.toToken(tokenResponse))
+                .map(msCoreMapper::toToken)
                 .collect(Collectors.toList());
         log.debug("retrieveTokensByProductId result = {}", tokens);
         log.trace("retrieveTokensByProductId end");
