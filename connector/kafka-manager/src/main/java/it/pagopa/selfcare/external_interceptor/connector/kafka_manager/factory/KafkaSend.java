@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
@@ -30,6 +31,7 @@ public abstract class KafkaSend implements KafkaSendService {
         this.kafkaTemplate = kafkaTemplate;
         this.notificationMapper = notificationMapper;
         this.mapper = mapper;
+        this.mapper.registerModule(new JavaTimeModule());
         this.registryProxyConnector = registryProxyConnector;
         this.externalApiConnector = externalApiConnector;
     }

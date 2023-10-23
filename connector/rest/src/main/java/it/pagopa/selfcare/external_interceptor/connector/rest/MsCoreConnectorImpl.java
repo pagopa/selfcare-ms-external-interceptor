@@ -1,13 +1,15 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest;
 
+import it.pagopa.selfcare.core.generated.openapi.v1.dto.InstitutionResponse;
+import it.pagopa.selfcare.core.generated.openapi.v1.dto.TokenListResponse;
+import it.pagopa.selfcare.core.generated.openapi.v1.dto.TokenResponse;
 import it.pagopa.selfcare.external_interceptor.connector.api.MsCoreConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.ms_core.Token;
 import it.pagopa.selfcare.external_interceptor.connector.rest.client.MsCoreRestClient;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.mapper.MsCoreMapper;
-import it.pagopa.selfcare.external_interceptor.connector.rest.model.ms_core.TokensResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,21 +30,24 @@ public class MsCoreConnectorImpl implements MsCoreConnector {
     public List<Token> retrieveTokensByProductId(String productId, Integer page, Integer size) {
         log.trace("retrieveTokensByProductId start");
         log.debug("retrieveTokensByProductId productId = {}, page = {}, size = {}", productId, page, size);
-        TokensResponse tokensResponse = restClient.retrieveTokensByProduct(productId, page, size);
-        List<Token> tokens = tokensResponse.getItems().stream()
-                .map(msCoreMapper::toToken)
+        ResponseEntity<TokenListResponse> tokensResponse = restClient._findFromProductUsingGET1(productId, page, size);
+        List<TokenResponse> items = tokensResponse.getBody().getItems();
+        List<Token> collect = items.stream().map(msCoreMapper::toToken)
                 .collect(Collectors.toList());
-        log.debug("retrieveTokensByProductId result = {}", tokens);
+//        List<Token> tokens = Objects.requireNonNull(tokensResponse.getBody()).getItems().stream()
+//                .map(tokenResponse -> msCoreMapper.toToken(tokenResponse))
+//                .collect(Collectors.toList());
+        log.debug("retrieveTokensByProductId result = {}", collect);
         log.trace("retrieveTokensByProductId end");
-        return tokens;
+        return collect;
     }
 
     @Override
     public Institution getInstitutionById(String institutionId){
         log.trace("getInstitutionById start");
         log.debug("getInstitutionById institutionId = {}", institutionId);
-        InstitutionResponse institutionResponse = restClient.getInstitutionById(institutionId);
-        Institution institution = msCoreMapper.toInstitution(institutionResponse);
+        ResponseEntity<InstitutionResponse> institutionResponse = restClient._retrieveInstitutionByIdUsingGET(institutionId);
+        Institution institution = msCoreMapper.toInstitution(institutionResponse.getBody());
         log.debug("getInstitutionById result = {}", institution);
         return institution;
     }
