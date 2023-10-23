@@ -2,7 +2,6 @@ package it.pagopa.selfcare.external_interceptor.connector.rest;
 
 import it.pagopa.selfcare.core.generated.openapi.v1.dto.InstitutionResponse;
 import it.pagopa.selfcare.core.generated.openapi.v1.dto.TokenListResponse;
-import it.pagopa.selfcare.core.generated.openapi.v1.dto.TokenResponse;
 import it.pagopa.selfcare.external_interceptor.connector.api.MsCoreConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.ms_core.Token;
@@ -13,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,15 +31,12 @@ public class MsCoreConnectorImpl implements MsCoreConnector {
         log.trace("retrieveTokensByProductId start");
         log.debug("retrieveTokensByProductId productId = {}, page = {}, size = {}", productId, page, size);
         ResponseEntity<TokenListResponse> tokensResponse = restClient._findFromProductUsingGET1(productId, page, size);
-        List<TokenResponse> items = tokensResponse.getBody().getItems();
-        List<Token> collect = items.stream().map(msCoreMapper::toToken)
+        List<Token> tokens = Objects.requireNonNull(tokensResponse.getBody()).getItems().stream()
+                .map(tokenResponse -> msCoreMapper.toToken(tokenResponse))
                 .collect(Collectors.toList());
-//        List<Token> tokens = Objects.requireNonNull(tokensResponse.getBody()).getItems().stream()
-//                .map(tokenResponse -> msCoreMapper.toToken(tokenResponse))
-//                .collect(Collectors.toList());
-        log.debug("retrieveTokensByProductId result = {}", collect);
+        log.debug("retrieveTokensByProductId result = {}", tokens);
         log.trace("retrieveTokensByProductId end");
-        return collect;
+        return tokens;
     }
 
     @Override

@@ -18,7 +18,6 @@ public interface PartyRegistryProxyRestClient {
     @ResponseBody
     ProxyInstitutionResponse getInstitutionById(@PathVariable("institutionId") String id);
 
-
     @GetMapping(value = "${rest-client.party-registry-proxy.geo-taxonomies.getByCode.path}", consumes = APPLICATION_JSON_VALUE)
     @ResponseBody
     GeographicTaxonomiesResponse getExtByCode(@PathVariable(value = "geotax_id") String code);

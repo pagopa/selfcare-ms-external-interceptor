@@ -69,7 +69,6 @@
                                 <skipDefaultInterface>false</skipDefaultInterface>
                                 <useTags>false</useTags>
                             </configOptions>
-                            <templateDirectory>${project.basedir}\src\main\resources\template\</templateDirectory>
                         </configuration>
                     </execution>
                 </executions>
