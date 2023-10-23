@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,16 +21,16 @@ public class Token {
     private RelationshipState status;
     private String institutionId;
     private String productId;
-    private String expiringDate;
+    private OffsetDateTime expiringDate;
     private String contractVersion;
     private String contractTemplate;
     private String contractSigned;
     private String contentType;
     private List<TokenUser> users;
     private InstitutionUpdate institutionUpdate;
-    private String createdAt;
-    private String updatedAt;
-    private String activatedAt;
-    private String deletedAt;
-    private String closedAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
+    private OffsetDateTime activatedAt;
+    private OffsetDateTime deletedAt;
+    private OffsetDateTime closedAt;
 }
