@@ -2,6 +2,7 @@ package it.pagopa.selfcare.external_interceptor.connector.kafka_manager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendService;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
@@ -27,6 +28,7 @@ public class KafkaInterceptor {
 
     public KafkaInterceptor(ObjectMapper mapper, KafkaSendStrategyFactory sendStrategyFactory, @Qualifier("sapNotificator") SendSapNotification sapSendService) {
         this.mapper = mapper;
+        this.mapper.registerModule(new JavaTimeModule());
         this.sendStrategyFactory = sendStrategyFactory;
         this.sapSendService = sapSendService;
     }

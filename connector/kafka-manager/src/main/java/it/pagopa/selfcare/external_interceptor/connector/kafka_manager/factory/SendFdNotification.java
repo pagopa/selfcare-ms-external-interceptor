@@ -93,7 +93,7 @@ public class SendFdNotification extends KafkaSend {
         eventTypes.forEach(type -> {
             notification.setType(type);
             notification.setUser(userToSend);
-            notification.setUpdatedAt(OffsetDateTime.now().toString());
+            notification.setUpdatedAt(OffsetDateTime.now());
             String userNotificationToSend = null;
             try {
                 userNotificationToSend = mapper.writeValueAsString(notification);

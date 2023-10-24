@@ -21,6 +21,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotify;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.TimeZone;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
+import static it.pagopa.selfcare.commons.utils.TestUtils.reflectionEqualsByName;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -116,7 +118,10 @@ class KafkaInterceptorTest {
         );
         //then
         verify(sendStrategyFactory, times(1)).create("prod-fd");
-        verify(fdNotificationService, times(1)).sendInstitutionNotification(notification, acknowledgment);
+        ArgumentCaptor<Notification> notificationArgumentCaptor = ArgumentCaptor.forClass(Notification.class);
+        verify(fdNotificationService, times(1)).sendInstitutionNotification(notificationArgumentCaptor.capture(), eq(acknowledgment));
+        Notification capturedNotification = notificationArgumentCaptor.getValue();
+        reflectionEqualsByName(notification, capturedNotification);
     }
 
     @Test
@@ -172,7 +177,6 @@ class KafkaInterceptorTest {
         verifyNoInteractions( fdNotificationService, sendStrategyFactory);
     }
 
-
     @Test
     void interceptUserNotification() throws JsonProcessingException {
         //given
@@ -194,7 +198,10 @@ class KafkaInterceptorTest {
         );
         //then
         verify(sendStrategyFactory, times(1)).create("prod-fd");
-        verify(fdNotificationService, times(1)).sendUserNotification(notification, acknowledgment);
+        ArgumentCaptor<UserNotification> notificationArgumentCaptor = ArgumentCaptor.forClass(UserNotification.class);
+        verify(fdNotificationService, times(1)).sendUserNotification(notificationArgumentCaptor.capture(), eq(acknowledgment));
+        UserNotification capturedNotification = notificationArgumentCaptor.getValue();
+        reflectionEqualsByName(notification, capturedNotification);
     }
 
     @Test
@@ -284,7 +291,10 @@ class KafkaInterceptorTest {
                 () -> interceptor.interceptInstitutionSap(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)), acknowledgment)
         );
         //then
-        verify(sapSendService, times(1)).sendInstitutionNotification(notification, acknowledgment);
+        ArgumentCaptor<Notification> notificationArgumentCaptor = ArgumentCaptor.forClass(Notification.class);
+        verify(sapSendService, times(1)).sendInstitutionNotification(notificationArgumentCaptor.capture(), eq(acknowledgment));
+        Notification capturedNotification = notificationArgumentCaptor.getValue();
+        reflectionEqualsByName(notification, capturedNotification);
     }
 
     @Test
