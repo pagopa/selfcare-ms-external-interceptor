@@ -366,6 +366,27 @@ class SendSapNotificationTest {
     }
 
     @Test
+    void productNotAllowed(){
+        //given
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"));
+        final Notification notification = mockInstance(new Notification());
+        final Institution institution = mockInstance(new Institution());
+        institution.setInstitutionType(InstitutionType.SA);
+        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
+        final Billing billing = mockInstance(new Billing());
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        notification.setInstitution(institution);
+        notification.setState("ACTIVE");
+        notification.setProduct("prod-io");
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(kafkaTemplate);
+    }
+
+    @Test
     void sendOldEvents() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
@@ -389,12 +410,11 @@ class SendSapNotificationTest {
         }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
 
         //when
-        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        Executable executable = () -> service.sendOldEvents(notification);
         //then
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
-        verify(acknowledgment, times(1)).acknowledge();
         verifyNoInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");

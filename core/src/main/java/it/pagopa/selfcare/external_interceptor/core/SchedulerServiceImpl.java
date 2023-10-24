@@ -53,8 +53,7 @@ public class SchedulerServiceImpl implements SchedulerService{
     @Scheduled(fixedDelayString = "${scheduler.fixed-delay.delay}")
     void regenerateQueueNotifications() {
         log.trace("regenerateQueueNotifications start");
-        if (configProperties.getSendOldEvent()) {
-            if (productsToRetrieve.isPresent()) {
+        if (configProperties.getSendOldEvent() && productsToRetrieve.isPresent()) {
                 for (String productId : productsToRetrieve.get()) {
                     int page = 0;
                     boolean nextPage = true;
@@ -74,7 +73,6 @@ public class SchedulerServiceImpl implements SchedulerService{
                 this.token_page_size_api = Optional.empty();
                 configProperties.setScheduler(false);
             }
-        }
         log.info("Next scheduled check at {}", OffsetDateTime.now().plusSeconds(configProperties.getFixedDelay() / 1000));
         log.trace("regenerateQueueNotifications end");
 
