@@ -24,6 +24,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -33,7 +34,9 @@ import java.util.Set;
 public class SendSapNotification extends KafkaSend implements KafkaSapSendService {
     static final String DESCRIPTION_TO_REPLACE_REGEX = " - COMUNE";
     public static final String SC_CONTRACTS_SAP = "Sc-Contracts-Sap";
-    private final Optional<Set<InstitutionType>> excludedInstitutionTypes;
+    private final Optional<Set<InstitutionType>> allowedInstitutionTypes;
+    private final Optional<List<String>> allowedProducts;
+
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
                                KafkaTemplate<String, String> kafkaTemplate,
@@ -41,50 +44,64 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                                ObjectMapper mapper,
                                RegistryProxyConnector registryProxyConnector,
                                ExternalApiConnector externalApiConnector,
-                               @Value("${external-interceptor.sap.excluded-institution-types}") Set<InstitutionType> excludedInstitutionTypes) {
+                               @Value("${external-interceptor.sap.allowed-institution-types}") Set<InstitutionType> allowedInstitutionTypes,
+                               @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> allowedProducts) {
         super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
-        this.excludedInstitutionTypes = Optional.ofNullable(excludedInstitutionTypes);
+        this.allowedInstitutionTypes = Optional.ofNullable(allowedInstitutionTypes);
+        this.allowedProducts = Optional.ofNullable(allowedProducts);
     }
 
     @Override
     public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendInstitutionNotification start");
-        log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
-        if (excludedInstitutionTypes.isPresent() && !excludedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType())) {
+        if (checkAllowedNotification(notification)) {
+            log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
-            try {
-                GeographicTaxonomies geographicTaxonomies = null;
-                if (notification.getInstitution().getSubUnitType() != null) {
-                    switch (notification.getInstitution().getSubUnitType()) {
-                        case "UO":
-                            OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notification.getInstitution().getSubUnitCode());
-                            notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
-                            geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
-                            break;
-                        case "AOO":
-                            HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notification.getInstitution().getSubUnitCode());
-                            notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                            geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
-                            break;
-                        default:
-                            break;
-                    }
+                setNotificationInstitutionLocationFields(notificationToSend);
+                notificationToSend.setType(NotificationType.ADD_INSTITUTE);
+                String institutionNotification = mapper.writeValueAsString(notificationToSend);
+                String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
+                String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
+                sendNotification(institutionNotification, SC_CONTRACTS_SAP, logSuccess, logFailure, Optional.ofNullable(acknowledgment));
+                log.trace("sendInstitutionNotification end");
+        }
+    }
+
+    private boolean checkAllowedNotification(Notification notification){
+        return allowedProducts.isPresent()
+                && allowedProducts.get().contains(notification.getProduct())
+                && allowedInstitutionTypes.isPresent()
+                && notification.getInstitution().getOrigin().equals("IPA")
+                && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType());
+    }
+
+    private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
+        try {
+            GeographicTaxonomies geographicTaxonomies = null;
+            if (notificationToSend.getInstitution().getSubUnitType() != null) {
+                switch (notificationToSend.getInstitution().getSubUnitType()) {
+                    case "UO":
+                        OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notificationToSend.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(organizationUnit.getMunicipalIstatCode());
+                        break;
+                    case "AOO":
+                        HomogeneousOrganizationalArea homogeneousOrganizationalArea = registryProxyConnector.getAooById(notificationToSend.getInstitution().getSubUnitCode());
+                        notificationToSend.getInstitution().setIstatCode(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
+                        break;
+                    default:
+                        break;
                 }
-                if (geographicTaxonomies != null) {
-                    notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
-                    notificationToSend.getInstitution().setCountry(geographicTaxonomies.getCountryAbbreviation());
-                    notificationToSend.getInstitution().setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
-                }
-            } catch (ResourceNotFoundException e) {
-                log.warn("Error while searching institution {} on IPA, {} ", notificationToSend.getInstitution().getDescription(), e.getMessage());
-                notificationToSend.getInstitution().setIstatCode(null);
             }
-            notificationToSend.setType(NotificationType.ADD_INSTITUTE);
-            String institutionNotification = mapper.writeValueAsString(notificationToSend);
-            String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
-            String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, SC_CONTRACTS_SAP, logSuccess, logFailure, Optional.ofNullable(acknowledgment));
-            log.trace("sendInstitutionNotification end");
+            if (geographicTaxonomies != null) {
+                notificationToSend.getInstitution().setCounty(geographicTaxonomies.getProvinceAbbreviation());
+                notificationToSend.getInstitution().setCountry(geographicTaxonomies.getCountryAbbreviation());
+                notificationToSend.getInstitution().setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+            }
+        } catch (ResourceNotFoundException e) {
+            log.warn("Error while searching institution {} on IPA, {} ", notificationToSend.getInstitution().getDescription(), e.getMessage());
+            notificationToSend.getInstitution().setIstatCode(null);
         }
     }
 
