@@ -31,7 +31,7 @@ public class SchedulerServiceImpl implements SchedulerService{
     public static final int TOKEN_PAGE_SIZE = 100;
     private Optional<Integer> token_page_size_api = Optional.empty();
     private final KafkaSapSendService kafkaSapSendService;
-    private final List<String> productsToRetrieve;
+    private final Optional<List<String>> productsToRetrieve;
     private final ScheduledConfig configProperties;
     private final NotificationMapper notificationMapper;
     private final RegistryProxyConnector partyRegistryProxyConnector;
@@ -44,7 +44,7 @@ public class SchedulerServiceImpl implements SchedulerService{
                                 RegistryProxyConnector partyRegistryProxyConnector) {
         this.msCoreConnector = msCoreConnector;
         this.kafkaSapSendService = kafkaSapSendService;
-        this.productsToRetrieve = productsToRetrieve;
+        this.productsToRetrieve = Optional.ofNullable(productsToRetrieve);
         this.configProperties = configProperties;
         this.notificationMapper = notificationMapper;
         this.partyRegistryProxyConnector = partyRegistryProxyConnector;
@@ -53,26 +53,26 @@ public class SchedulerServiceImpl implements SchedulerService{
     @Scheduled(fixedDelayString = "${scheduler.fixed-delay.delay}")
     void regenerateQueueNotifications() {
         log.trace("regenerateQueueNotifications start");
-        if (configProperties.getSendOldEvent()) {
-            for (String productId : productsToRetrieve) {
-                int page = 0;
-                boolean nextPage = true;
-                do {
-                    List<Token> tokens = msCoreConnector.retrieveTokensByProductId(productId, page, token_page_size_api.orElse(TOKEN_PAGE_SIZE));
-                    log.debug("[KAFKA] TOKEN NUMBER {} PAGE {}", tokens.size(), page);
+        if (configProperties.getSendOldEvent() && productsToRetrieve.isPresent()) {
+                for (String productId : productsToRetrieve.get()) {
+                    int page = 0;
+                    boolean nextPage = true;
+                    do {
+                        List<Token> tokens = msCoreConnector.retrieveTokensByProductId(productId, page, token_page_size_api.orElse(TOKEN_PAGE_SIZE));
+                        log.debug("[KAFKA] TOKEN NUMBER {} PAGE {}", tokens.size(), page);
 
-                    sendSapNotifications(tokens);
-                    page += 1;
-                    if (tokens.size() < TOKEN_PAGE_SIZE) {
-                        nextPage = false;
-                        log.debug("[KAFKA] TOKEN TOTAL NUMBER {}", page * TOKEN_PAGE_SIZE + tokens.size());
-                    }
+                        sendSapNotifications(tokens);
+                        page += 1;
+                        if (tokens.size() < TOKEN_PAGE_SIZE) {
+                            nextPage = false;
+                            log.debug("[KAFKA] TOKEN TOTAL NUMBER {}", page * TOKEN_PAGE_SIZE + tokens.size());
+                        }
 
-                } while (nextPage);
+                    } while (nextPage);
+                }
+                this.token_page_size_api = Optional.empty();
+                configProperties.setScheduler(false);
             }
-            this.token_page_size_api = Optional.empty();
-            configProperties.setScheduler(false);
-        }
         log.info("Next scheduled check at {}", OffsetDateTime.now().plusSeconds(configProperties.getFixedDelay() / 1000));
         log.trace("regenerateQueueNotifications end");
 
@@ -86,17 +86,7 @@ public class SchedulerServiceImpl implements SchedulerService{
                    RootParent rootParent = new RootParent();
                    rootParent.setDescription(institution.getParentDescription());
                    Notification toNotify = notificationMapper.toNotificationToSend(institution, token, QueueEvent.ADD);
-                   try {
-                       InstitutionProxyInfo institutionProxyInfo = partyRegistryProxyConnector.getInstitutionProxyById(institution.getExternalId());
-                       institution.setIstatCode(institutionProxyInfo.getIstatCode());
-                       GeographicTaxonomies geographicTaxonomies = partyRegistryProxyConnector.getExtById(institution.getIstatCode());
-                       institution.setCounty(geographicTaxonomies.getProvinceAbbreviation());
-                       institution.setCountry(geographicTaxonomies.getCountryAbbreviation());
-                       institution.setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
-                   } catch (ResourceNotFoundException e) {
-                       log.warn("[INSTITUTION NOT FOUND]Error while searching institution {}, {} ", institution.getExternalId(), e.getMessage());
-                       institution.setIstatCode(null);
-                   }
+                   setInstitutionLocationFields(institution);
                    toNotify.setInstitution(institution);
                    try {
                        kafkaSapSendService.sendOldEvents(toNotify);
@@ -109,6 +99,20 @@ public class SchedulerServiceImpl implements SchedulerService{
 
             }
         });
+    }
+
+    private void setInstitutionLocationFields(Institution institution){
+        try {
+            InstitutionProxyInfo institutionProxyInfo = partyRegistryProxyConnector.getInstitutionProxyById(institution.getExternalId());
+            institution.setIstatCode(institutionProxyInfo.getIstatCode());
+            GeographicTaxonomies geographicTaxonomies = partyRegistryProxyConnector.getExtById(institution.getIstatCode());
+            institution.setCounty(geographicTaxonomies.getProvinceAbbreviation());
+            institution.setCountry(geographicTaxonomies.getCountryAbbreviation());
+            institution.setCity(geographicTaxonomies.getDescription().replace(DESCRIPTION_TO_REPLACE_REGEX, ""));
+        } catch (ResourceNotFoundException e) {
+            log.warn("[INSTITUTION NOT FOUND]Error while searching institution {}, {} ", institution.getExternalId(), e.getMessage());
+            institution.setIstatCode(null);
+        }
     }
 
     @Override
