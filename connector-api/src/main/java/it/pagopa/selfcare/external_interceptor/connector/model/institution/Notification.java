@@ -1,6 +1,9 @@
 package it.pagopa.selfcare.external_interceptor.connector.model.institution;
 
+import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.QueueEvent;
 import lombok.Data;
+
+import java.time.OffsetDateTime;
 
 @Data
 public class Notification {
@@ -15,7 +18,9 @@ public class Notification {
     private String pricingPlan;
     private Institution institution;
     private Billing billing;
-    private String  updatedAt;
-    private String createdAt;
-    private String closedAt;
+    private OffsetDateTime updatedAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime closedAt;
+    private QueueEvent notificationType;
+
 }

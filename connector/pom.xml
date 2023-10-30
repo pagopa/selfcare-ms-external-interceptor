@@ -15,7 +15,6 @@
             <groupId>it.pagopa.selfcare</groupId>
             <artifactId>selc-external-interceptor-connector-api</artifactId>
         </dependency>
-
     </dependencies>
 
     <modules>

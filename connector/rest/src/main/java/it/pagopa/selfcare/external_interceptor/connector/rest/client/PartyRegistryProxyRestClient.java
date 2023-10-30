@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.external_interceptor.connector.rest.client;
 
+import it.pagopa.selfcare.external_interceptor.connector.rest.config.PartyRegistryProxyRestClientConfig;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.AooResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.GeographicTaxonomiesResponse;
 import it.pagopa.selfcare.external_interceptor.connector.rest.model.ProxyInstitutionResponse;
@@ -10,13 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-@FeignClient(name = "${rest-client.party-registry-proxy.serviceCode}", url = "${rest-client.party-registry-proxy.base-url}")
+@FeignClient(value = "${rest-client.party-registry-proxy.serviceCode}", name = "${rest-client.party-registry-proxy.serviceCode}", url = "${rest-client.party-registry-proxy.base-url}", configuration = PartyRegistryProxyRestClientConfig.class)
 public interface PartyRegistryProxyRestClient {
 
     @GetMapping(value = "${rest-client.party-registry-proxy.getInstitutionById.path}", consumes = APPLICATION_JSON_VALUE)
     @ResponseBody
     ProxyInstitutionResponse getInstitutionById(@PathVariable("institutionId") String id);
-
 
     @GetMapping(value = "${rest-client.party-registry-proxy.geo-taxonomies.getByCode.path}", consumes = APPLICATION_JSON_VALUE)
     @ResponseBody

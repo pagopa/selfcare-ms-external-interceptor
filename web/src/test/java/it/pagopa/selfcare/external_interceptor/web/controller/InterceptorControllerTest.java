@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = {InterceptorController.class}, excludeAutoConfiguration = SecurityAutoConfiguration.class)
@@ -26,6 +28,7 @@ class InterceptorControllerTest {
     protected MockMvc mvc;
     @MockBean
     private InterceptorService interceptorService;
+
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -56,4 +59,39 @@ class InterceptorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().is2xxSuccessful());
     }
+
+     @Test
+    void checkOrganization_ok() throws Exception {
+        //given
+        final String fiscalCode = "fiscalCode";
+        final String vatNumber = "vatNumber";
+        final String productId = "productId";
+        when(interceptorService.checkOrganization(anyString(), anyString())).thenReturn(true);
+        //when
+        mvc.perform(MockMvcRequestBuilders
+                .head(BASE_URL + "/organizations/{productId}", productId)
+                .param("fiscalCode", fiscalCode)
+                .param("vatNumber", vatNumber))
+                .andExpect(status().isOk());
+        //then
+         verify(interceptorService, times(1)).checkOrganization(fiscalCode, vatNumber);
+         verifyNoMoreInteractions(interceptorService);
+     }
+     @Test
+    void checkOrganization_notFound() throws Exception {
+        //given
+        final String fiscalCode = "fiscalCode";
+        final String vatNumber = "vatNumber";
+        final String productId = "productId";
+        when(interceptorService.checkOrganization(anyString(), anyString())).thenReturn(false);
+        //when
+        mvc.perform(MockMvcRequestBuilders
+                .head(BASE_URL + "/organizations/{productId}", productId)
+                .param("fiscalCode", fiscalCode)
+                .param("vatNumber", vatNumber))
+                .andExpect(status().isNotFound());
+        //then
+         verify(interceptorService, times(1)).checkOrganization(fiscalCode, vatNumber);
+         verifyNoMoreInteractions(interceptorService);
+     }
 }
