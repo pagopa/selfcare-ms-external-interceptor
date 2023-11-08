@@ -18,6 +18,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.mapper.Notificati
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.InstitutionProxyInfo;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,7 +121,14 @@ class SendSapNotificationTest {
         notification.setBilling(billing);
         notification.setProduct("prod-io-premium");
         notification.setState("ACTIVE");
-
+        InstitutionProxyInfo mockProxyInfo = mockInstance(new InstitutionProxyInfo());
+        GeographicTaxonomies proxyTaxonomy = mockInstance(new GeographicTaxonomies());
+        proxyTaxonomy.setCountry("proxyContry");
+        proxyTaxonomy.setProvinceAbbreviation("proxyProvince");
+        proxyTaxonomy.setDescription("proxyCity - COMUNE");
+        proxyTaxonomy.setIstatCode(mockProxyInfo.getIstatCode());
+        when(registryProxyConnector.getInstitutionProxyById(any())).thenReturn(mockProxyInfo);
+        when(registryProxyConnector.getExtById(any())).thenReturn(proxyTaxonomy);
         when(kafkaTemplate.send(any(), any()))
                 .thenReturn(mockFuture);
 
@@ -137,6 +145,8 @@ class SendSapNotificationTest {
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getTaxCode());
+        verify(registryProxyConnector, times(1)).getExtById(mockProxyInfo.getIstatCode());
         verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
@@ -400,6 +410,14 @@ class SendSapNotificationTest {
         notification.setInstitution(institution);
         notification.setState("ACTIVE");
         notification.setProduct("prod-pn");
+        InstitutionProxyInfo mockProxyInfo = mockInstance(new InstitutionProxyInfo());
+        GeographicTaxonomies proxyTaxonomy = mockInstance(new GeographicTaxonomies());
+        proxyTaxonomy.setCountry("proxyContry");
+        proxyTaxonomy.setProvinceAbbreviation("proxyProvince");
+        proxyTaxonomy.setDescription("proxyCity - COMUNE");
+        proxyTaxonomy.setIstatCode(mockProxyInfo.getIstatCode());
+        when(registryProxyConnector.getInstitutionProxyById(any())).thenReturn(mockProxyInfo);
+        when(registryProxyConnector.getExtById(any())).thenReturn(proxyTaxonomy);
         when(kafkaTemplate.send(any(), any()))
                 .thenReturn(mockFuture);
 
@@ -415,7 +433,9 @@ class SendSapNotificationTest {
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
-        verifyNoInteractions(registryProxyConnector);
+        verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getTaxCode());
+        verify(registryProxyConnector, times(1)).getExtById(mockProxyInfo.getIstatCode());
+        verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution(), "subUnitType");

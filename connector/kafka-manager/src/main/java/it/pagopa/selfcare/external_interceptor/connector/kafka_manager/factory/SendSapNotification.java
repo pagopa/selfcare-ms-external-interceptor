@@ -14,6 +14,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notif
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.InstitutionProxyInfo;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,15 +73,14 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
         return allowedProducts.isPresent()
                 && allowedProducts.get().contains(notification.getProduct())
                 && allowedInstitutionTypes.isPresent()
-                && notification.getInstitution().getOrigin().equals("IPA")
                 && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType());
     }
 
     private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
         try {
             GeographicTaxonomies geographicTaxonomies = null;
-            if (notificationToSend.getInstitution().getSubUnitType() != null) {
-                switch (notificationToSend.getInstitution().getSubUnitType()) {
+            if (notificationToSend.getInstitution().getSubUnitType() != null || notificationToSend.getInstitution().getCity() == null) {
+                switch (Objects.requireNonNull(notificationToSend.getInstitution().getSubUnitType())) {
                     case "UO":
                         OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notificationToSend.getInstitution().getSubUnitCode());
                         notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
@@ -91,7 +92,9 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                         geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
                         break;
                     default:
-                        break;
+                        InstitutionProxyInfo proxyInfo = registryProxyConnector.getInstitutionProxyById(notificationToSend.getInstitution().getTaxCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(proxyInfo.getIstatCode());
+                        notificationToSend.getInstitution().setIstatCode(proxyInfo.getIstatCode());
                 }
             }
             if (geographicTaxonomies != null) {
