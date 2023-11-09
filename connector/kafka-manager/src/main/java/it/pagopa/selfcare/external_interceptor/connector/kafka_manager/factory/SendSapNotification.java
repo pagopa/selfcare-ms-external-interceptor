@@ -79,7 +79,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
         try {
             GeographicTaxonomies geographicTaxonomies = null;
-            if (notificationToSend.getInstitution().getSubUnitType() != null || notificationToSend.getInstitution().getCity() == null) {
+            if (notificationToSend.getInstitution().getSubUnitType() != null && notificationToSend.getInstitution().getCity() == null) {
                 switch (Objects.requireNonNull(notificationToSend.getInstitution().getSubUnitType())) {
                     case "UO":
                         OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notificationToSend.getInstitution().getSubUnitCode());
