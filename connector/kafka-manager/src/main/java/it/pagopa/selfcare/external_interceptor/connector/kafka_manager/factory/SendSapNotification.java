@@ -74,12 +74,20 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     }
 
     private boolean checkAllowedNotification(Notification notification){
-        return allowedProducts.isPresent()
-                && allowedProducts.get().contains(notification.getProduct())
-                && allowedInstitutionTypes.isPresent()
-                && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType())
-                && allowedOrigins.isPresent()
-                && allowedOrigins.get().contains(Origin.fromValue(notification.getInstitution().getOrigin()));
+        return isProductAllowed(notification, allowedProducts)
+                && isInstitutionTypeAllowed(notification, allowedInstitutionTypes)
+                && isOriginAllowed(notification, allowedOrigins);
+    }
+    private boolean isProductAllowed(Notification notification, Optional<List<String>> allowedProducts) {
+        return allowedProducts.isPresent() && allowedProducts.get().contains(notification.getProduct());
+    }
+
+    private boolean isInstitutionTypeAllowed(Notification notification, Optional<Set<InstitutionType>> allowedTypes) {
+        return allowedTypes.isPresent() && allowedTypes.get().contains(notification.getInstitution().getInstitutionType());
+    }
+
+    private boolean isOriginAllowed(Notification notification, Optional<Set<Origin>> allowedOrigins) {
+        return allowedOrigins.isPresent() && allowedOrigins.get().contains(Origin.fromValue(notification.getInstitution().getOrigin()));
     }
 
     private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
