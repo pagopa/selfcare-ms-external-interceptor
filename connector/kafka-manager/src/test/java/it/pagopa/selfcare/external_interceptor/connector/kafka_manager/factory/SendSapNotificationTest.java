@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.commons.base.utils.InstitutionType;
+import it.pagopa.selfcare.commons.base.utils.Origin;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.exceptions.ResourceNotFoundException;
@@ -18,6 +19,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.mapper.Notificati
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.InstitutionProxyInfo;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +71,7 @@ class SendSapNotificationTest {
             return mapper;
         }
     }
+
     private KafkaTemplate<String, String> kafkaTemplate;
     @Mock
     private KafkaSend abstractService;
@@ -99,7 +102,7 @@ class SendSapNotificationTest {
         mockSendResult = mock(SendResult.class);
         registryProxyConnector = mock(RegistryProxyConnector.class);
         externalApiConnector = mock(ExternalApiConnector.class);
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-io-premium", "prod-pn"));
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-io-premium", "prod-pn"), Set.of(Origin.IPA, Origin.SELC));
     }
 
     @AfterEach
@@ -111,7 +114,7 @@ class SendSapNotificationTest {
     void sendInstitutionNotificationEc() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
+        Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("EC");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
@@ -120,7 +123,14 @@ class SendSapNotificationTest {
         notification.setBilling(billing);
         notification.setProduct("prod-io-premium");
         notification.setState("ACTIVE");
-
+        InstitutionProxyInfo mockProxyInfo = mockInstance(new InstitutionProxyInfo());
+        GeographicTaxonomies proxyTaxonomy = mockInstance(new GeographicTaxonomies());
+        proxyTaxonomy.setCountry("proxyContry");
+        proxyTaxonomy.setProvinceAbbreviation("proxyProvince");
+        proxyTaxonomy.setDescription("proxyCity - COMUNE");
+        proxyTaxonomy.setIstatCode(mockProxyInfo.getIstatCode());
+        when(registryProxyConnector.getInstitutionProxyById(any())).thenReturn(mockProxyInfo);
+        when(registryProxyConnector.getExtById(any())).thenReturn(proxyTaxonomy);
         when(kafkaTemplate.send(any(), any()))
                 .thenReturn(mockFuture);
 
@@ -137,16 +147,19 @@ class SendSapNotificationTest {
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getInstitutionProxyById(institution.getTaxCode());
+        verify(registryProxyConnector, times(1)).getExtById(mockProxyInfo.getIstatCode());
         verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
     }
+
     @Test
     void sendInstitutionNotificationUo() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
+        Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("UO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
@@ -186,11 +199,12 @@ class SendSapNotificationTest {
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
     }
+
     @Test
     void sendInstitutionNotificationAoo() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
+        Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("AOO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
@@ -235,7 +249,7 @@ class SendSapNotificationTest {
     void sendInstitutionNotification_NotFound() throws JsonProcessingException {
         //given
         final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
+        Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("AOO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
@@ -304,9 +318,9 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void noExcludedInstitutionTypes(){
+    void noExcludedInstitutionTypes() {
         //given
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, null, List.of("prod-pn"));
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, null, List.of("prod-pn"), Set.of(Origin.IPA));
         final Notification notification = mockInstance(new Notification());
         final Institution institution = mockInstance(new Institution());
         final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
@@ -325,9 +339,9 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void allowedProductsNotPresent(){
+    void allowedProductsNotPresent() {
         //given
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), null);
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), null, Set.of(Origin.IPA));
         final Notification notification = mockInstance(new Notification());
         final Institution institution = mockInstance(new Institution());
         final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
@@ -344,10 +358,11 @@ class SendSapNotificationTest {
         assertDoesNotThrow(executable);
         verifyNoInteractions(kafkaTemplate);
     }
+
     @Test
-    void notificationInstitutionType_notPresent(){
+    void notificationInstitutionType_notPresent() {
         //given
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"));
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"), Set.of(Origin.IPA));
         final Notification notification = mockInstance(new Notification());
         final Institution institution = mockInstance(new Institution());
         institution.setInstitutionType(InstitutionType.SA);
@@ -366,9 +381,9 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void productNotAllowed(){
+    void productNotAllowed() {
         //given
-        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"));
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"), Set.of(Origin.IPA));
         final Notification notification = mockInstance(new Notification());
         final Institution institution = mockInstance(new Institution());
         institution.setInstitutionType(InstitutionType.SA);
@@ -379,6 +394,50 @@ class SendSapNotificationTest {
         notification.setInstitution(institution);
         notification.setState("ACTIVE");
         notification.setProduct("prod-io");
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(kafkaTemplate);
+    }
+
+    @Test
+    void allowedOriginsNotPresent() {
+        //given
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"), null);
+        final Notification notification = new Notification();
+        final Institution institution = new Institution();
+        institution.setInstitutionType(InstitutionType.PA);
+        institution.setOrigin(Origin.IPA.getValue());
+        final OnboardedProduct onboardedProduct = new OnboardedProduct();
+        final Billing billing = new Billing();
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        notification.setInstitution(institution);
+        notification.setState("ACTIVE");
+        notification.setProduct("prod-pn");
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(kafkaTemplate);
+    }
+
+    @Test
+    void originNotAllowed(){
+        //given
+        service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA, InstitutionType.GSP), List.of("prod-pn"), Set.of(Origin.IPA));
+        final Notification notification = new Notification();
+        final Institution institution = new Institution();
+        institution.setInstitutionType(InstitutionType.GSP);
+        institution.setOrigin(Origin.SELC.getValue());
+        final OnboardedProduct onboardedProduct = new OnboardedProduct();
+        final Billing billing = new Billing();
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        notification.setInstitution(institution);
+        notification.setState("ACTIVE");
+        notification.setProduct("prod-pn");
         //when
         Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
         //then
@@ -415,7 +474,7 @@ class SendSapNotificationTest {
         assertDoesNotThrow(executable);
         ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
         verify(kafkaTemplate, times(1)).send(eq("Sc-Contracts-Sap"), institutionCaptor.capture());
-        verifyNoInteractions(registryProxyConnector);
+        verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution(), "subUnitType");
