@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.commons.base.utils.InstitutionType;
+import it.pagopa.selfcare.commons.base.utils.Origin;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.KafkaSapSendService;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
@@ -38,6 +39,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     public static final String SC_CONTRACTS_SAP = "Sc-Contracts-Sap";
     private final Optional<Set<InstitutionType>> allowedInstitutionTypes;
     private final Optional<List<String>> allowedProducts;
+    private final Optional<Set<Origin>> allowedOrigins;
 
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
@@ -47,10 +49,12 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                                RegistryProxyConnector registryProxyConnector,
                                ExternalApiConnector externalApiConnector,
                                @Value("${external-interceptor.sap.allowed-institution-types}") Set<InstitutionType> allowedInstitutionTypes,
-                               @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> allowedProducts) {
+                               @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> allowedProducts,
+                               @Value("${external-interceptor.sap.allowed-origins}") Set<Origin> allowedOrigins) {
         super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
         this.allowedInstitutionTypes = Optional.ofNullable(allowedInstitutionTypes);
         this.allowedProducts = Optional.ofNullable(allowedProducts);
+        this.allowedOrigins = Optional.ofNullable(allowedOrigins);
     }
 
     @Override
@@ -73,7 +77,9 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
         return allowedProducts.isPresent()
                 && allowedProducts.get().contains(notification.getProduct())
                 && allowedInstitutionTypes.isPresent()
-                && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType());
+                && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType())
+                && allowedOrigins.isPresent()
+                && allowedOrigins.get().contains(Origin.fromValue(notification.getInstitution().getOrigin()));
     }
 
     private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
