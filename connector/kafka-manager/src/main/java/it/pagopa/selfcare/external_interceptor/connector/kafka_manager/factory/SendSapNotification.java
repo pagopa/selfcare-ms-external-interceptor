@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.commons.base.utils.InstitutionType;
+import it.pagopa.selfcare.commons.base.utils.Origin;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.KafkaSapSendService;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
@@ -14,6 +15,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notif
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.GeographicTaxonomies;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.HomogeneousOrganizationalArea;
+import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.InstitutionProxyInfo;
 import it.pagopa.selfcare.external_interceptor.connector.model.registry_proxy.OrganizationUnit;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,6 +39,7 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     public static final String SC_CONTRACTS_SAP = "Sc-Contracts-Sap";
     private final Optional<Set<InstitutionType>> allowedInstitutionTypes;
     private final Optional<List<String>> allowedProducts;
+    private final Optional<Set<Origin>> allowedOrigins;
 
     public SendSapNotification(@Autowired
                                @Qualifier("sapProducer")
@@ -45,10 +49,12 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                                RegistryProxyConnector registryProxyConnector,
                                ExternalApiConnector externalApiConnector,
                                @Value("${external-interceptor.sap.allowed-institution-types}") Set<InstitutionType> allowedInstitutionTypes,
-                               @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> allowedProducts) {
+                               @Value("#{'${external-interceptor.scheduler.products-to-resend}'.split(',')}") List<String> allowedProducts,
+                               @Value("${external-interceptor.sap.allowed-origins}") Set<Origin> allowedOrigins) {
         super(kafkaTemplate, notificationMapper, mapper, registryProxyConnector, externalApiConnector);
         this.allowedInstitutionTypes = Optional.ofNullable(allowedInstitutionTypes);
         this.allowedProducts = Optional.ofNullable(allowedProducts);
+        this.allowedOrigins = Optional.ofNullable(allowedOrigins);
     }
 
     @Override
@@ -68,18 +74,27 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     }
 
     private boolean checkAllowedNotification(Notification notification){
-        return allowedProducts.isPresent()
-                && allowedProducts.get().contains(notification.getProduct())
-                && allowedInstitutionTypes.isPresent()
-                && notification.getInstitution().getOrigin().equals("IPA")
-                && allowedInstitutionTypes.get().contains(notification.getInstitution().getInstitutionType());
+        return isProductAllowed(notification, allowedProducts)
+                && isInstitutionTypeAllowed(notification, allowedInstitutionTypes)
+                && isOriginAllowed(notification, allowedOrigins);
+    }
+    private boolean isProductAllowed(Notification notification, Optional<List<String>> allowedProducts) {
+        return allowedProducts.isPresent() && allowedProducts.get().contains(notification.getProduct());
+    }
+
+    private boolean isInstitutionTypeAllowed(Notification notification, Optional<Set<InstitutionType>> allowedTypes) {
+        return allowedTypes.isPresent() && allowedTypes.get().contains(notification.getInstitution().getInstitutionType());
+    }
+
+    private boolean isOriginAllowed(Notification notification, Optional<Set<Origin>> allowedOrigins) {
+        return allowedOrigins.isPresent() && allowedOrigins.get().contains(Origin.fromValue(notification.getInstitution().getOrigin()));
     }
 
     private void setNotificationInstitutionLocationFields(NotificationToSend notificationToSend) {
         try {
             GeographicTaxonomies geographicTaxonomies = null;
-            if (notificationToSend.getInstitution().getSubUnitType() != null) {
-                switch (notificationToSend.getInstitution().getSubUnitType()) {
+            if (notificationToSend.getInstitution().getSubUnitType() != null && notificationToSend.getInstitution().getCity() == null) {
+                switch (Objects.requireNonNull(notificationToSend.getInstitution().getSubUnitType())) {
                     case "UO":
                         OrganizationUnit organizationUnit = registryProxyConnector.getUoById(notificationToSend.getInstitution().getSubUnitCode());
                         notificationToSend.getInstitution().setIstatCode(organizationUnit.getMunicipalIstatCode());
@@ -91,7 +106,9 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                         geographicTaxonomies = registryProxyConnector.getExtById(homogeneousOrganizationalArea.getMunicipalIstatCode());
                         break;
                     default:
-                        break;
+                        InstitutionProxyInfo proxyInfo = registryProxyConnector.getInstitutionProxyById(notificationToSend.getInstitution().getTaxCode());
+                        geographicTaxonomies = registryProxyConnector.getExtById(proxyInfo.getIstatCode());
+                        notificationToSend.getInstitution().setIstatCode(proxyInfo.getIstatCode());
                 }
             }
             if (geographicTaxonomies != null) {

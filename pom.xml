@@ -7,7 +7,7 @@
     <parent>
         <groupId>it.pagopa.selfcare</groupId>
         <artifactId>selc-starter-parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.3-SNAPSHOT</version>
         <!-- lookup parent from repository -->
 
     </parent>
@@ -16,7 +16,7 @@
     <name>selc-external-interceptor</name>
     <description>Microservice to manage Self Care events for external Products</description>
     <properties>
-        <selc-commons.version>2.4.9</selc-commons.version>
+        <selc-commons.version>2.5.0</selc-commons.version>
     </properties>
 
     <dependencyManagement>
