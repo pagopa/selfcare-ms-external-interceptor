@@ -34,6 +34,7 @@ public class Institution {
     private String supportPhone;
     private String subUnitCode;
     private String subUnitType;
+    private String category;
     private String aooParentCode;
     private RootParent rootParent;
     private String parentDescription;
