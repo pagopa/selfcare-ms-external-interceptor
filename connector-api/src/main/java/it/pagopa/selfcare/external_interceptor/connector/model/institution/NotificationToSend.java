@@ -17,6 +17,7 @@ public class NotificationToSend {
     private OffsetDateTime closedAt;
     private OffsetDateTime updatedAt;
     private NotificationType type;
+    private String pricingPlan;
     private InstitutionToSend institution;
     private String fileName;
     private String contentType;

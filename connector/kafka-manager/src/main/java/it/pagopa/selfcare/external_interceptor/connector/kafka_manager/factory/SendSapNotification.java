@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import it.pagopa.selfcare.commons.base.utils.Origin;
+import it.pagopa.selfcare.commons.base.utils.PricingPlan;
+import it.pagopa.selfcare.commons.base.utils.ProductId;
 import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnector;
 import it.pagopa.selfcare.external_interceptor.connector.api.KafkaSapSendService;
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
@@ -79,7 +81,11 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
                 && isOriginAllowed(notification, allowedOrigins);
     }
     private boolean isProductAllowed(Notification notification, Optional<List<String>> allowedProducts) {
-        return allowedProducts.isPresent() && allowedProducts.get().contains(notification.getProduct());
+        return (allowedProducts.isPresent() && allowedProducts.get().contains(notification.getProduct())) || isProdIoFast(notification.getProduct(), notification.getPricingPlan());
+    }
+
+    private boolean isProdIoFast(String productId, String pricingPlan){
+        return ProductId.PROD_IO.getValue().equals(productId) && PricingPlan.FA.name().equals(pricingPlan);
     }
 
     private boolean isInstitutionTypeAllowed(Notification notification, Optional<Set<InstitutionType>> allowedTypes) {
