@@ -23,6 +23,7 @@ public class InstitutionToSend {
     private String county;
     private String subUnitCode;
     private String subUnitType;
+//    private String category; //fixme: for now this field doesn't have to be sent to outer products
     private RootParent rootParent;
 
 }

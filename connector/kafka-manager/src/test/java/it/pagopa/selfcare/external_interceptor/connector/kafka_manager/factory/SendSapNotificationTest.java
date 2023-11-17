@@ -113,12 +113,12 @@ class SendSapNotificationTest {
     @Test
     void sendInstitutionNotificationEc() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
+        final Notification notification = createNotificationMock();
         Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("EC");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = mockInstance(new Billing());
+        final Billing billing = createBillingMock();
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-io-premium");
@@ -158,12 +158,12 @@ class SendSapNotificationTest {
     @Test
     void sendInstitutionNotificationUo() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
+        final Notification notification = createNotificationMock();
         Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("UO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = mockInstance(new Billing());
+        final Billing billing = createBillingMock();
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-pn");
@@ -203,12 +203,12 @@ class SendSapNotificationTest {
     @Test
     void sendInstitutionNotificationAoo() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
+        final Notification notification = createNotificationMock();
         Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("AOO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = mockInstance(new Billing());
+        final Billing billing = createBillingMock();
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-pn");
@@ -248,12 +248,12 @@ class SendSapNotificationTest {
     @Test
     void sendInstitutionNotification_NotFound() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
+        final Notification notification = createNotificationMock();
         Institution institution = mockInstance(new Institution(), "setCity");
         institution.setSubUnitType("AOO");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = mockInstance(new Billing());
+        final Billing billing = createBillingMock();
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-pn");
@@ -285,12 +285,12 @@ class SendSapNotificationTest {
     @Test
     void sendSapNotification_nullSubUnitType() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
+        final Notification notification = createNotificationMock();
+        Institution institution = createInstitutionMock();
         institution.setSubUnitType(null);
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = mockInstance(new Billing());
+        final Billing billing = createBillingMock();
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-pn");
@@ -321,10 +321,10 @@ class SendSapNotificationTest {
     void noExcludedInstitutionTypes() {
         //given
         service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, null, List.of("prod-pn"), Set.of(Origin.IPA));
-        final Notification notification = mockInstance(new Notification());
-        final Institution institution = mockInstance(new Institution());
-        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        final Billing billing = mockInstance(new Billing());
+        final Notification notification = createNotificationMock();
+        final Institution institution = createInstitutionMock();
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         notification.setProduct("prod-pn");
@@ -342,10 +342,10 @@ class SendSapNotificationTest {
     void allowedProductsNotPresent() {
         //given
         service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), null, Set.of(Origin.IPA));
-        final Notification notification = mockInstance(new Notification());
-        final Institution institution = mockInstance(new Institution());
-        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        final Billing billing = mockInstance(new Billing());
+        final Notification notification = createNotificationMock();
+        final Institution institution = createInstitutionMock();
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         institution.setInstitutionType(InstitutionType.PA);
@@ -363,11 +363,11 @@ class SendSapNotificationTest {
     void notificationInstitutionType_notPresent() {
         //given
         service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"), Set.of(Origin.IPA));
-        final Notification notification = mockInstance(new Notification());
-        final Institution institution = mockInstance(new Institution());
+        final Notification notification = createNotificationMock();
+        final Institution institution = createInstitutionMock();
         institution.setInstitutionType(InstitutionType.SA);
-        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        final Billing billing = mockInstance(new Billing());
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         notification.setInstitution(institution);
@@ -384,11 +384,11 @@ class SendSapNotificationTest {
     void productNotAllowed() {
         //given
         service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA), List.of("prod-pn"), Set.of(Origin.IPA));
-        final Notification notification = mockInstance(new Notification());
-        final Institution institution = mockInstance(new Institution());
+        final Notification notification = createNotificationMock();
+        final Institution institution = createInstitutionMock();
         institution.setInstitutionType(InstitutionType.SA);
-        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        final Billing billing = mockInstance(new Billing());
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         notification.setInstitution(institution);
@@ -401,6 +401,26 @@ class SendSapNotificationTest {
         verifyNoInteractions(kafkaTemplate);
     }
 
+    @Test
+    void isProdIoFast(){
+        //given
+        final Notification notification = createNotificationMock();
+        notification.setPricingPlan("FA");
+        final Institution institution = createInstitutionMock();
+        institution.setInstitutionType(InstitutionType.SA);
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
+        onboardedProduct.setBilling(billing);
+        institution.setOnboarding(List.of(onboardedProduct));
+        notification.setInstitution(institution);
+        notification.setState("ACTIVE");
+        notification.setProduct("prod-io");
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        verifyNoInteractions(kafkaTemplate);
+    }
     @Test
     void allowedOriginsNotPresent() {
         //given
@@ -448,12 +468,12 @@ class SendSapNotificationTest {
     @Test
     void sendOldEvents() throws JsonProcessingException {
         //given
-        final Notification notification = mockInstance(new Notification());
-        final Institution institution = mockInstance(new Institution());
+        final Notification notification = createNotificationMock();
+        final Institution institution = createInstitutionMock();
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
-        final OnboardedProduct onboardedProduct = mockInstance(new OnboardedProduct());
-        final Billing billing = mockInstance(new Billing());
+        final OnboardedProduct onboardedProduct = createOnboardedProductMock();
+        final Billing billing = createBillingMock();
         onboardedProduct.setBilling(billing);
         institution.setOnboarding(List.of(onboardedProduct));
         notification.setInstitution(institution);
@@ -478,6 +498,22 @@ class SendSapNotificationTest {
         NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution(), "subUnitType");
+    }
 
+
+    private static Notification createNotificationMock(){
+        return mockInstance(new Notification());
+    }
+
+    private static Institution createInstitutionMock(){
+        return mockInstance(new Institution());
+    }
+
+    private static Billing createBillingMock(){
+        return mockInstance(new Billing());
+    }
+
+    private static OnboardedProduct createOnboardedProductMock(){
+        return mockInstance(new OnboardedProduct());
     }
 }
