@@ -7,6 +7,8 @@ import it.pagopa.selfcare.external_interceptor.connector.api.ExternalApiConnecto
 import it.pagopa.selfcare.external_interceptor.connector.api.RegistryProxyConnector;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
@@ -24,8 +26,11 @@ public abstract class KafkaSend implements KafkaSendService {
     KafkaTemplate<String, String> kafkaTemplate;
     final NotificationMapper notificationMapper;
     final ObjectMapper mapper;
+    protected static final String SCHEMA_VERSION = "schema-version";
     final RegistryProxyConnector registryProxyConnector;
     final ExternalApiConnector externalApiConnector;
+    @Value(value = "${external-interceptor.producer.exit-model-schema.version}")
+    private String publishSchemaVersion;
 
     KafkaSend(KafkaTemplate<String, String> kafkaTemplate, NotificationMapper notificationMapper, ObjectMapper mapper, RegistryProxyConnector registryProxyConnector, ExternalApiConnector externalApiConnector){
         this.kafkaTemplate = kafkaTemplate;
@@ -39,7 +44,9 @@ public abstract class KafkaSend implements KafkaSendService {
     void sendNotification(String message, String topic, String successLog, String logFailure, Optional<Acknowledgment> acknowledgment) {
         log.trace("sendNotification start");
         log.debug(LogUtils.CONFIDENTIAL_MARKER, "send notification message = {}, to topic: {}", message, topic);
-        ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topic, message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, null, message);
+        Optional.ofNullable(publishSchemaVersion).ifPresent(s -> record.headers().add(SCHEMA_VERSION, s.getBytes()));
+        ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(record);
         future.addCallback(new ListenableFutureCallback<>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
