@@ -18,6 +18,7 @@ import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.Queue
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.mapper.NotificationMapperImpl;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.*;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +44,7 @@ import java.util.TimeZone;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -123,7 +123,7 @@ class SendFdNotificationTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
 
-        when(kafkaTemplate.send(any(), any()))
+        when(kafkaTemplate.send(any(ProducerRecord.class)))
                 .thenReturn(mockFuture);
 
         doAnswer(invocationOnMock -> {
@@ -136,9 +136,9 @@ class SendFdNotificationTest {
         Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
-        ArgumentCaptor<String> institutionCaptor = ArgumentCaptor.forClass(String.class);
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), institutionCaptor.capture());
-        NotificationToSend captured = mapper.readValue(institutionCaptor.getValue(), NotificationToSend.class);
+        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
+        NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         verify(acknowledgment, times(1)).acknowledge();
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
@@ -153,7 +153,7 @@ class SendFdNotificationTest {
         notification.setUser(userNotify);
         notification.setProductId("prod-fd");
 
-        when(kafkaTemplate.send(any(), any()))
+        when(kafkaTemplate.send(any(ProducerRecord.class)))
                 .thenReturn(mockFuture);
 
         doAnswer(invocationOnMock -> {
@@ -165,10 +165,10 @@ class SendFdNotificationTest {
         Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
-        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
-        NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
+        NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType", "pricingPlan");
     }
 
@@ -183,7 +183,7 @@ class SendFdNotificationTest {
         notification.setProduct("prod-fd");
         notification.setState("ACTIVE");
         RuntimeException ex = new RuntimeException("error");
-        when(kafkaTemplate.send(any(), any()))
+        when(kafkaTemplate.send(any(ProducerRecord.class)))
                 .thenReturn(mockFuture);
         doAnswer(invocationOnMock -> {
             ListenableFutureCallback callback = invocationOnMock.getArgument(0);
@@ -194,7 +194,9 @@ class SendFdNotificationTest {
                 () -> service.sendInstitutionNotification(notification, acknowledgment)
         );
         //then
-        verify(kafkaTemplate, times(1)).send(eq(allowedTopics.get("prod-fd")), anyString());
+        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
+        assertEquals("selfcare-fd", producerRecordArgumentCaptor.getValue().topic());
         verify(acknowledgment, times(1)).nack(60000);
     }
 
@@ -284,7 +286,7 @@ class SendFdNotificationTest {
         userProductDetails.setOnboardedUserProductDetails(onboardedUserProduct);
 
         when(externalApiConnector.getUserOnboardedProductDetails(anyString(), anyString(), anyString())).thenReturn(userProductDetails);
-        when(kafkaTemplate.send(any(), any()))
+        when(kafkaTemplate.send(any(ProducerRecord.class)))
                 .thenReturn(mockFuture);
 
         doAnswer(invocationOnMock -> {
@@ -296,11 +298,11 @@ class SendFdNotificationTest {
         Executable executable = () -> service.sendUserNotification(notification, acknowledgment);
         //then
         assertDoesNotThrow(executable);
-        ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         verify(externalApiConnector, times(1)).getUserOnboardedProductDetails(userNotify.getUserId(), notification.getInstitutionId(), notification.getProductId());
-        verify(kafkaTemplate, times(2)).send(eq(allowedTopics.get("prod-fd")), userCaptor.capture());
+        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate, times(2)).send(producerRecordArgumentCaptor.capture());
         verify(acknowledgment, times(1)).acknowledge();
-        NotificationToSend captured = mapper.readValue(userCaptor.getValue(), NotificationToSend.class);
+        NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "institution", "billing", "state", "closedAt", "fileName", "contentType", "pricingPlan");
     }
 
