@@ -6,6 +6,15 @@ image:
 ingress:
   annotations:
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://selfcare.pagopa.it"
+  tls:
+    - hosts:
+        - selc.internal.selfcare.pagopa.it
+      secretName: selc-internal-selfcare-pagopa-it
+  hosts:
+    - host: selc.internal.selfcare.pagopa.it
+      paths:
+        - path: /ms-external-interceptor/v1/(.*)
+          pathType: ImplementationSpecific
 
 autoscaling:
   enabled: false
@@ -13,6 +22,10 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+
+pdb:
+  enabled: false
+  minReplicas: 1
 
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.selfcare.pagopa.it"
