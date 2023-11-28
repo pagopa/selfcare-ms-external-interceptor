@@ -14,6 +14,14 @@ ingress:
         - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 600M
+  limits:
+    cpu: 500m
+    memory: 800M
+
 autoscaling:
   enabled: false
   minReplicas: 1
