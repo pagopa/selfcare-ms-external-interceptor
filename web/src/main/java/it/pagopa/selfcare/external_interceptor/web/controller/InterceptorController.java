@@ -2,6 +2,7 @@ package it.pagopa.selfcare.external_interceptor.web.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
@@ -27,6 +28,7 @@ public class InterceptorController {
         this.interceptorService = interceptorService;
     }
 
+    @Tag(name = "external-v2")
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/acknowledgment/{productId}/message/{messageId}/status/{status}")
