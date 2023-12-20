@@ -1,3 +1,5 @@
+replicaCount: 2
+
 image:
   repository: selcdacr.azurecr.io/selfcaremsexternalinterceptor
 
@@ -30,7 +32,7 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 pdb:
-  enabled: false
+  enabled: true
 
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.dev.selfcare.pagopa.it"
