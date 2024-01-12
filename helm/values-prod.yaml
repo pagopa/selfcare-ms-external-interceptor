@@ -1,3 +1,5 @@
+replicaCount: 2
+
 image:
   repository: selcpacr.azurecr.io/selfcaremsexternalinterceptor
   pullPolicy: Always # TODO change me in IfNotPresent when each build will have a different tag
@@ -16,6 +18,14 @@ ingress:
         - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 500M
+  limits:
+    cpu: 500m
+    memory: 600M
+
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -24,7 +34,7 @@ autoscaling:
   # targetMemoryUtilizationPercentage: 80
 
 pdb:
-  enabled: false
+  enabled: true
   minReplicas: 1
 
 configEnvSpecific:
