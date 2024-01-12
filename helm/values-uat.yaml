@@ -1,3 +1,5 @@
+replicaCount: 2
+
 image:
   repository: selcuacr.azurecr.io/selfcaremsexternalinterceptor
   tag: 0.0.1-SNAPSHOT
@@ -15,12 +17,23 @@ ingress:
         - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 500M
+  limits:
+    cpu: 500m
+    memory: 600M
+
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+
+pdb:
+  enabled: true
 
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.uat.selfcare.pagopa.it"
