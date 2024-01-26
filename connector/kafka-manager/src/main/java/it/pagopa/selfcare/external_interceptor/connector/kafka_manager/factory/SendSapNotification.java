@@ -65,13 +65,22 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
         if (checkAllowedNotification(notification)) {
             log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
-                setNotificationInstitutionLocationFields(notificationToSend);
-                notificationToSend.setType(NotificationType.ADD_INSTITUTE);
-                String institutionNotification = mapper.writeValueAsString(notificationToSend);
-                String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
-                String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
-                sendNotification(institutionNotification, SC_CONTRACTS_SAP, logSuccess, logFailure, Optional.ofNullable(acknowledgment));
-                log.trace("sendInstitutionNotification end");
+            setNotificationInstitutionLocationFields(notificationToSend);
+            setNotificationToSendInstitutionDescription(notificationToSend);
+            notificationToSend.setType(NotificationType.ADD_INSTITUTE);
+            String institutionNotification = mapper.writeValueAsString(notificationToSend);
+            String logSuccess = String.format("sent notification for token : %s, to SAP", notification.getOnboardingTokenId());
+            String logFailure = String.format("error during notification sending for token %s: {}, on SAP ", notification.getOnboardingTokenId());
+            sendNotification(institutionNotification, SC_CONTRACTS_SAP, logSuccess, logFailure, Optional.ofNullable(acknowledgment));
+            log.trace("sendInstitutionNotification end");
+        }
+    }
+
+    private static void setNotificationToSendInstitutionDescription(NotificationToSend notificationToSend) {
+        if(notificationToSend.getInstitution().getRootParent() != null) {
+            notificationToSend.getInstitution().setDescription(
+                    notificationToSend.getInstitution().getRootParent().getDescription()
+                            + " - " + notificationToSend.getInstitution().getDescription());
         }
     }
 

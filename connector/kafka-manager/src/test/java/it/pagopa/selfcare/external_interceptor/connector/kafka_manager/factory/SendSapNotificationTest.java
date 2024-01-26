@@ -116,7 +116,7 @@ class SendSapNotificationTest {
     void sendInstitutionNotificationEc() throws JsonProcessingException {
         //given
         final Notification notification = createNotificationMock();
-        Institution institution = mockInstance(new Institution(), "setCity");
+        Institution institution = mockInstance(new Institution(), "setCity", "rootParent");
         institution.setSubUnitType("EC");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
