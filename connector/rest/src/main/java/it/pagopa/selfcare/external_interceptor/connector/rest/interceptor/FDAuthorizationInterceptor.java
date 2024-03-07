@@ -23,7 +23,8 @@ public class FDAuthorizationInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
-        template.header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", fdRestClient.getFDToken(paramForm).getAccessToken()))
+        template.removeHeader(HttpHeaders.AUTHORIZATION)
+                .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", fdRestClient.getFDToken(paramForm).getAccessToken()))
                 .header(HttpHeaders.ACCEPT, "*/*");
     }
 }

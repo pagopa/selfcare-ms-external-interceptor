@@ -13,6 +13,7 @@ public class K8sAuthorizationHeaderInterceptor implements RequestInterceptor {
     private String k8sAuthorizationToken;
     @Override
     public void apply(RequestTemplate template) {
-        template.header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", k8sAuthorizationToken));
+        template.removeHeader(HttpHeaders.AUTHORIZATION)
+                .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", k8sAuthorizationToken));
     }
 }
