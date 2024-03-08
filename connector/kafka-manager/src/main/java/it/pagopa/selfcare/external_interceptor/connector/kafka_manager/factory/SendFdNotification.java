@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static it.pagopa.selfcare.external_interceptor.connector.model.constant.ProductId.PROD_FD;
+import static it.pagopa.selfcare.external_interceptor.connector.model.constant.ProductId.PROD_FD_GARANTITO;
+
 @Service
 @Slf4j
 public class SendFdNotification extends KafkaSend {
@@ -63,7 +66,9 @@ public class SendFdNotification extends KafkaSend {
         log.debug(LogUtils.CONFIDENTIAL_MARKER, "send user notification = {}", userNotification);
         if (validateProductTopic(userNotification.getProductId())) {
             NotificationToSend notificationToSend = notificationMapper.createUserNotification(userNotification);
-            if (userNotification.getEventType().equals(QueueEvent.UPDATE) && userNotification.getUser().getRelationshipStatus() == null) {
+            if (userNotification.getEventType().equals(QueueEvent.UPDATE)
+                    && (userNotification.getProductId().equals(PROD_FD.getValue())
+                    || userNotification.getProductId().equals(PROD_FD_GARANTITO.getValue()))) {
                 UserProductDetails userProduct = externalApiConnector.getUserOnboardedProductDetails(userNotification.getUser().getUserId(), userNotification.getInstitutionId(), userNotification.getProductId());
                 if(userProduct.getOnboardedUserProductDetails() != null) {
                     sendUpdateUserEvents(notificationToSend, userProduct);
