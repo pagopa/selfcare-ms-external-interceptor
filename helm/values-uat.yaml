@@ -17,6 +17,14 @@ ingress:
         - path: /ms-external-interceptor/v1/(.*)
           pathType: ImplementationSpecific
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 500M
+  limits:
+    cpu: 500m
+    memory: 600M
+
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -30,6 +38,6 @@ pdb:
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.uat.selfcare.pagopa.it"
   MS_EXTERNAL_INTERCEPTOR_LOG_LEVEL: "DEBUG"
-  SAP_ALLOWED_INSTITUTION_TYPES: "PA,GSP,SA,SA,SCP"
+  SAP_ALLOWED_INSTITUTION_TYPES: "PA,GSP,SA,AS,SCP"
   SAP_ALLOWED_ORIGIN: "IPA,SELC"
   PRODUCTS_TO_RESEND: "prod-pn,prod-io-sign,prod-io-premium"

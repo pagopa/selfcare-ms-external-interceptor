@@ -20,6 +20,7 @@ import java.util.UUID;
 @Mapper(componentModel = "spring", imports = {UUID.class, RelationshipState.class})
 public interface NotificationMapper {
 
+    @Mapping(target = "id",  expression = "java(UUID.randomUUID().toString())")
     @Mapping(target = "user", source = "inbound.user", qualifiedByName = "toUserToSend")
     @Mapping(target = "product", source = "productId")
     NotificationToSend createUserNotification(UserNotification inbound);
