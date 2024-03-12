@@ -116,7 +116,7 @@ class SendSapNotificationTest {
     void sendInstitutionNotificationEc() throws JsonProcessingException {
         //given
         final Notification notification = createNotificationMock();
-        Institution institution = mockInstance(new Institution(), "setCity");
+        Institution institution = mockInstance(new Institution(), "setCity", "setRootParent");
         institution.setSubUnitType("EC");
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
@@ -154,7 +154,7 @@ class SendSapNotificationTest {
         verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
-        checkNotNullFields(captured.getInstitution());
+        checkNotNullFields(captured.getInstitution(), "rootParent");
     }
 
     @Test
