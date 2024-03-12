@@ -108,4 +108,5 @@ secrets_names = {
   "KAFKA_USERS_SELFCARE_RO_SASL_JAAS_CONFIG"     = "eventhub-sc-users-selfcare-wo-connection-string-lc"
   "KAFKA_SELFCARE_FD_WO_SASL_JAAS_CONFIG"        = "eventhub-selfcare-fd-fd-connection-string-lc"
   "KAFKA_SC_CONTRACTS_SAP_WO_SASL_JAAS_CONFIG"   = "eventhub-sc-contracts-sap-sap-connection-string-lc"
+  "K8S_AUTHORIZATION_TOKEN"                      = "jwt-bearer-token-functions"
 }
