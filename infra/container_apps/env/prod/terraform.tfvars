@@ -97,28 +97,28 @@ app_settings = [
     value = "PLAIN"
   },
   {
-    name  = "KAFKA_CONTRACTS_TOPIC            
+    name  = "KAFKA_CONTRACTS_TOPIC"
     value = "SC-Contracts"
   },
   {
-    name  = "KAFKA_FD_TOPIC                   
+    name  = "KAFKA_FD_TOPIC"
     value = "Selfcare-FD"
   },
   {
-    name  = "KAFKA_USERS_TOPIC                
+    name  = "KAFKA_USERS_TOPIC"
     value = "SC-Users"
   }
 ]
 
 secrets_names = {
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"           = "appinsights-connection-string"
-    "SELFCARE_APIM_INTERNAL_API_KEY"                  = "onboarding-interceptor-apim-internal"
-    "FD_TOKEN_GRANT_TYPE"                             = "prod-fd-grant-type"
-    "FD_TOKEN_CLIENT_ID"                              = "prod-fd-client-id"
-    "FD_TOKEN_CLIENT_SECRET"                          = "prod-fd-client-secret"
-    "MONGODB_CONNECTION_URI"                          = "mongodb-connection-string"
-    "KAFKA_CONTRACTS_SELFCARE_RO_SASL_JAAS_CONFIG"    = "eventhub-sc-contracts-selfcare-wo-connection-string-lc"
-    "KAFKA_USERS_SELFCARE_RO_SASL_JAAS_CONFIG"        = "eventhub-sc-users-selfcare-wo-connection-string-lc"
-    "KAFKA_SELFCARE_FD_WO_SASL_JAAS_CONFIG"           = "eventhub-selfcare-fd-fd-connection-string-lc"
-    "KAFKA_SC_CONTRACTS_SAP_WO_SASL_JAAS_CONFIG"      = "eventhub-sc-contracts-sap-sap-connection-string-lc" 
+  "APPLICATIONINSIGHTS_CONNECTION_STRING"        = "appinsights-connection-string"
+  "SELFCARE_APIM_INTERNAL_API_KEY"               = "onboarding-interceptor-apim-internal"
+  "FD_TOKEN_GRANT_TYPE"                          = "prod-fd-grant-type"
+  "FD_TOKEN_CLIENT_ID"                           = "prod-fd-client-id"
+  "FD_TOKEN_CLIENT_SECRET"                       = "prod-fd-client-secret"
+  "MONGODB_CONNECTION_URI"                       = "mongodb-connection-string"
+  "KAFKA_CONTRACTS_SELFCARE_RO_SASL_JAAS_CONFIG" = "eventhub-sc-contracts-selfcare-wo-connection-string-lc"
+  "KAFKA_USERS_SELFCARE_RO_SASL_JAAS_CONFIG"     = "eventhub-sc-users-selfcare-wo-connection-string-lc"
+  "KAFKA_SELFCARE_FD_WO_SASL_JAAS_CONFIG"        = "eventhub-selfcare-fd-fd-connection-string-lc"
+  "KAFKA_SC_CONTRACTS_SAP_WO_SASL_JAAS_CONFIG"   = "eventhub-sc-contracts-sap-sap-connection-string-lc"
 }
