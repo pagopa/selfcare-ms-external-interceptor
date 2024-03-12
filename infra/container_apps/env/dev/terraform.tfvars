@@ -42,15 +42,15 @@ app_settings = [
     value = "-javaagent:applicationinsights-agent.jar"
   },
   {
-    name  = APPLICATIONINSIGHTS_ROLE_NAME
+    name  = "APPLICATIONINSIGHTS_ROLE_NAME"
     value = "ms-external-interceptor"
   },
   {
-    name  = KAFKA_AUTO_OFFSET_RESET_CONFIG
+    name  = "KAFKA_AUTO_OFFSET_RESET_CONFIG"
     value = "earliest"
   },
   {
-    name  = ALLOWED_PRODUCER_TOPICS
+    name  = "ALLOWED_PRODUCER_TOPICS"
     value = "{'prod-fd': 'selfcare-fd', 'prod-fd-garantito': 'selfcare-fd'}"
   },
   {
