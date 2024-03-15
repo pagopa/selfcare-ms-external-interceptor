@@ -3,6 +3,7 @@ package it.pagopa.selfcare.external_interceptor.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
+import it.pagopa.selfcare.external_interceptor.web.config.WebTestConfig;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +22,14 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = {InterceptorController.class}, excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(classes = {InterceptorController.class})
+@ContextConfiguration(classes = {InterceptorController.class, WebTestConfig.class})
 class InterceptorControllerTest {
     private static final String BASE_URL = "/interceptor";
     @Autowired
     protected MockMvc mvc;
     @MockBean
     private InterceptorService interceptorService;
+
 
 
     @Autowired

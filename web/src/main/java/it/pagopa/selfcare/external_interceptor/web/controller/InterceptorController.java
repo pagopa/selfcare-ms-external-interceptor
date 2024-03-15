@@ -24,14 +24,12 @@ import javax.validation.Valid;
 public class InterceptorController {
 
     private final InterceptorService interceptorService;
-
-    private final boolean byPassCheckOrganization;
+    @Value("${prod-fd.bypass-checkOrganization}")
+    private boolean byPassCheckOrganization;
 
     @Autowired
-    public InterceptorController(InterceptorService interceptorService,
-                                 @Value("${prod-fd.bypass-CheckOrganization}")boolean byPassCheckOrganization) {
+    public InterceptorController(InterceptorService interceptorService) {
         this.interceptorService = interceptorService;
-        this.byPassCheckOrganization = byPassCheckOrganization;
     }
 
     @Tags({@Tag(name = "external-v2"), @Tag(name = "interceptor")})
@@ -60,10 +58,10 @@ public class InterceptorController {
                                                   @ApiParam("${swagger.external-interceptor.institution.model.vatNumber}") @RequestParam("vatNumber") String vatNumber) {
         log.trace("checkOrganization start");
         log.debug("checkOrganization productId = {}, fiscalCode = {}, vatNumber = {}", productId, fiscalCode, vatNumber);
-        boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber);
+        boolean alreadyRegistered = byPassCheckOrganization?false:interceptorService.checkOrganization(fiscalCode, vatNumber);
         log.debug("checkOrganization result = {}", alreadyRegistered);
         log.trace("checkOrganization end");
-        if (alreadyRegistered && !byPassCheckOrganization)
+        if (alreadyRegistered)
             return ResponseEntity.status(HttpStatus.OK).build();
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
