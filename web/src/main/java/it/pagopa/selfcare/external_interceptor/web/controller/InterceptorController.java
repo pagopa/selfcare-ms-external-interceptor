@@ -2,14 +2,15 @@ package it.pagopa.selfcare.external_interceptor.web.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
-import io.swagger.annotations.ApiParam;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
 import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +25,13 @@ public class InterceptorController {
 
     private final InterceptorService interceptorService;
 
+    private final boolean byPassCheckOrganization;
+
     @Autowired
-    public InterceptorController(InterceptorService interceptorService) {
+    public InterceptorController(InterceptorService interceptorService,
+                                 @Value("${prod-fd.bypass-CheckOrganization}")boolean byPassCheckOrganization) {
         this.interceptorService = interceptorService;
+        this.byPassCheckOrganization = byPassCheckOrganization;
     }
 
     @Tags({@Tag(name = "external-v2"), @Tag(name = "interceptor")})
@@ -58,7 +63,7 @@ public class InterceptorController {
         boolean alreadyRegistered = interceptorService.checkOrganization(fiscalCode, vatNumber);
         log.debug("checkOrganization result = {}", alreadyRegistered);
         log.trace("checkOrganization end");
-        if (alreadyRegistered)
+        if (alreadyRegistered && !byPassCheckOrganization)
             return ResponseEntity.status(HttpStatus.OK).build();
         else
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
