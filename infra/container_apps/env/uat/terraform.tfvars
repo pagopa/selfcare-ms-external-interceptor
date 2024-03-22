@@ -29,7 +29,7 @@ app_settings = [
   },
   {
     name  = "SAP_ALLOWED_INSTITUTION_TYPES"
-    value = "PA,GSP,SA,SA,SCP"
+    value = "PA,GSP,SA,AS,SCP"
   },
   {
     name  = "SAP_ALLOWED_ORIGIN"
