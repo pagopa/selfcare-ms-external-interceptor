@@ -43,3 +43,4 @@ configEnvSpecific:
   SAP_ALLOWED_INSTITUTION_TYPES: "PA,GSP,SA,AS,SCP"
   SAP_ALLOWED_ORIGIN: "IPA,SELC"
   PRODUCTS_TO_RESEND: "prod-pn,prod-io-sign,prod-io-premium"
+  BYPASS_CHECK_ORGANIZATION: "false"

@@ -1,4 +1,4 @@
-replicaCount: 2
+replicaCount: 0
 
 image:
   repository: selcuacr.azurecr.io/selfcaremsexternalinterceptor
@@ -27,8 +27,8 @@ resources:
 
 autoscaling:
   enabled: false
-  minReplicas: 1
-  maxReplicas: 100
+  minReplicas: 0
+  maxReplicas: 0
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
@@ -41,3 +41,4 @@ configEnvSpecific:
   SAP_ALLOWED_INSTITUTION_TYPES: "PA,GSP,SA,AS,SCP"
   SAP_ALLOWED_ORIGIN: "IPA,SELC"
   PRODUCTS_TO_RESEND: "prod-pn,prod-io-sign,prod-io-premium"
+  BYPASS_CHECK_ORGANIZATION: "false"
