@@ -1,4 +1,4 @@
-replicaCount: 0
+replicaCount: 1
 
 image:
   repository: selcuacr.azurecr.io/selfcaremsexternalinterceptor
@@ -27,8 +27,8 @@ resources:
 
 autoscaling:
   enabled: false
-  minReplicas: 0
-  maxReplicas: 0
+  minReplicas: 1
+  maxReplicas: 1
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
