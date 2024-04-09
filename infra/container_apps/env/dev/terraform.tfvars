@@ -55,15 +55,15 @@ app_settings = [
   },
   {
     name  = "USERVICE_PARTY_REGISTRY_PROXY_URL"
-    value = "https://selc-d-party-reg-proxy-ca.gentleflower-c63e62fe.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-party-reg-proxy-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-d-external-api-backend-ca.gentleflower-c63e62fe.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-external-api-backend-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"
-    value = "https://selc-d-ms-core-ca.gentleflower-c63e62fe.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-ms-core-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
   },
   {
     name  = "PROD_FD_URL"
