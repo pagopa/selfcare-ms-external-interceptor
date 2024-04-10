@@ -70,15 +70,15 @@ app_settings = [
   },
   {
     name  = "USERVICE_PARTY_REGISTRY_PROXY_URL"
-    value = "https://selc-p-party-reg-proxy-ca.salmonstone-7f910b8f.westeurope.azurecontainerapps.io"
+    value = "https://selc-p-party-reg-proxy-ca.greensand-62fc96da.westeurope.azurecontainerapps.io"
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-p-external-api-backend-ca.salmonstone-7f910b8f.westeurope.azurecontainerapps.io"
+    value = "https://selc-p-external-api-backend-ca.greensand-62fc96da.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"
-    value = "https://selc-p-ms-core-ca.salmonstone-7f910b8f.westeurope.azurecontainerapps.io"
+    value = "https://selc-p-ms-core-ca.greensand-62fc96da.westeurope.azurecontainerapps.io"
   },
   {
     name  = "PROD_FD_URL"
