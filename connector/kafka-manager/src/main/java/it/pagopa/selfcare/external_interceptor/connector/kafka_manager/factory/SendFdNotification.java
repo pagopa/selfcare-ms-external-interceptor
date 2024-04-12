@@ -70,7 +70,7 @@ public class SendFdNotification extends KafkaSend {
                     && (userNotification.getProductId().equals(PROD_FD.getValue())
                     || userNotification.getProductId().equals(PROD_FD_GARANTITO.getValue()))) {
                 UserProductDetails userProduct = externalApiConnector.getUserOnboardedProductDetails(userNotification.getUser().getUserId(), userNotification.getInstitutionId(), userNotification.getProductId());
-                if(userProduct.getOnboardedUserProductDetails() != null) {
+                if(userProduct.getOnboardedProductDetails() != null) {
                     sendUpdateUserEvents(notificationToSend, userProduct);
                     acknowledgment.acknowledge();
                 }
@@ -92,9 +92,9 @@ public class SendFdNotification extends KafkaSend {
         List<NotificationType> eventTypes = List.of(NotificationType.DELETE_USER, NotificationType.ACTIVE_USER);
         UserToSend userToSend = new UserToSend();
         userToSend.setUserId(userProductDetails.getId());
-        userToSend.setRole(userProductDetails.getOnboardedUserProductDetails().getRole());
-        userToSend.setRoles(userProductDetails.getOnboardedUserProductDetails().getRoles());
-        notification.setCreatedAt(userProductDetails.getOnboardedUserProductDetails().getCreatedAt());
+        userToSend.setRole(userProductDetails.getOnboardedProductDetails().getRole());
+        userToSend.setRoles(userProductDetails.getOnboardedProductDetails().getRoles());
+        notification.setCreatedAt(userProductDetails.getOnboardedProductDetails().getCreatedAt());
         eventTypes.forEach(type -> {
             notification.setType(type);
             notification.setUser(userToSend);
