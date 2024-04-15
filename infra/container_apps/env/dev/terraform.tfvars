@@ -59,7 +59,7 @@ app_settings = [
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-d-external-api-backend-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-ext-api-backend-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"
