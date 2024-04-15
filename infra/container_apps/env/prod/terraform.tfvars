@@ -74,7 +74,7 @@ app_settings = [
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-p-external-api-backend-ca.greensand-62fc96da.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-ext-api-backend-ca.greensand-62fc96da.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"

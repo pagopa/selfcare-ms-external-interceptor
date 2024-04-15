@@ -63,7 +63,7 @@ app_settings = [
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-u-external-api-backend-ca.proudglacier-20652b81.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-ext-api-backend-ca.proudglacier-20652b81.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"
