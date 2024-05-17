@@ -66,8 +66,8 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
         if (checkAllowedNotification(notification)) {
             log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
-            if (StringUtils.hasText(notification.getInstitution().getTaxCodeInvoicing())) {
-                notificationToSend.getInstitution().setTaxCode(notification.getInstitution().getTaxCodeInvoicing());
+            if (notification.getBilling() != null && StringUtils.hasText(notification.getBilling().getTaxCodeInvoicing())) {
+                notificationToSend.getInstitution().setTaxCode(notification.getBilling().getTaxCodeInvoicing());
             }
             setNotificationInstitutionLocationFields(notificationToSend);
             setNotificationToSendInstitutionDescription(notificationToSend);

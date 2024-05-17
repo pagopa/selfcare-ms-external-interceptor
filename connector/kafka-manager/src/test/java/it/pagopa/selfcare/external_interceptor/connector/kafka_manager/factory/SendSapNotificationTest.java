@@ -119,9 +119,9 @@ class SendSapNotificationTest {
         Institution institution = mockInstance(new Institution(), "setCity", "setRootParent");
         institution.setSubUnitType("EC");
         institution.setOrigin("IPA");
-        institution.setTaxCodeInvoicing(null);
         institution.setInstitutionType(InstitutionType.PA);
         final Billing billing = createBillingMock();
+        billing.setTaxCodeInvoicing(null);
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-io-premium");
@@ -159,13 +159,12 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void sendInstitutionNotificationEcWithTaxCodeInvoicing() throws JsonProcessingException {
+    void sendInstitutionNotificationUOWithTaxCodeInvoicing() throws JsonProcessingException {
         //given
         final Notification notification = createNotificationMock();
         Institution institution = mockInstance(new Institution(), "setCity", "setRootParent");
         institution.setSubUnitType("UO");
         institution.setOrigin("IPA");
-        institution.setTaxCodeInvoicing("taxCodeInvoicing");
         institution.setInstitutionType(InstitutionType.PA);
         final Billing billing = createBillingMock();
         notification.setInstitution(institution);
@@ -202,6 +201,7 @@ class SendSapNotificationTest {
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution(), "rootParent");
+        assertEquals("setTaxCodeInvoicing", captured.getInstitution().getTaxCode());
 
     }
 
