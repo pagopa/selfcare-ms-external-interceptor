@@ -15,6 +15,7 @@ public class Institution {
     private String address;
     private String zipCode;
     private String taxCode;
+    private String taxCodeInvoicing;
     private String origin;
     private Billing billing;
     private InstitutionType institutionType;
