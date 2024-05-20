@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -65,6 +66,9 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
         if (checkAllowedNotification(notification)) {
             log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
             NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
+            if (notification.getBilling() != null && StringUtils.hasText(notification.getBilling().getTaxCodeInvoicing())) {
+                notificationToSend.getInstitution().setTaxCode(notification.getBilling().getTaxCodeInvoicing());
+            }
             setNotificationInstitutionLocationFields(notificationToSend);
             setNotificationToSendInstitutionDescription(notificationToSend);
             notificationToSend.setType(NotificationType.ADD_INSTITUTE);
@@ -77,23 +81,24 @@ public class SendSapNotification extends KafkaSend implements KafkaSapSendServic
     }
 
     private static void setNotificationToSendInstitutionDescription(NotificationToSend notificationToSend) {
-        if(notificationToSend.getInstitution().getRootParent() != null) {
+        if (notificationToSend.getInstitution().getRootParent() != null) {
             notificationToSend.getInstitution().setDescription(
                     notificationToSend.getInstitution().getRootParent().getDescription()
                             + " - " + notificationToSend.getInstitution().getDescription());
         }
     }
 
-    private boolean checkAllowedNotification(Notification notification){
+    private boolean checkAllowedNotification(Notification notification) {
         return isProductAllowed(notification, allowedProducts)
                 && isInstitutionTypeAllowed(notification, allowedInstitutionTypes)
                 && isOriginAllowed(notification, allowedOrigins);
     }
+
     private boolean isProductAllowed(Notification notification, Optional<List<String>> allowedProducts) {
         return (allowedProducts.isPresent() && allowedProducts.get().contains(notification.getProduct())) || isProdIoFast(notification.getProduct(), notification.getPricingPlan());
     }
 
-    private boolean isProdIoFast(String productId, String pricingPlan){
+    private boolean isProdIoFast(String productId, String pricingPlan) {
         return ProductId.PROD_IO.getValue().equals(productId) && PricingPlan.FA.name().equals(pricingPlan);
     }
 

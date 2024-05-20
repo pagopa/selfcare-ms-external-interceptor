@@ -121,6 +121,7 @@ class SendSapNotificationTest {
         institution.setOrigin("IPA");
         institution.setInstitutionType(InstitutionType.PA);
         final Billing billing = createBillingMock();
+        billing.setTaxCodeInvoicing(null);
         notification.setInstitution(institution);
         notification.setBilling(billing);
         notification.setProduct("prod-io-premium");
@@ -155,6 +156,53 @@ class SendSapNotificationTest {
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution(), "rootParent");
+    }
+
+    @Test
+    void sendInstitutionNotificationUOWithTaxCodeInvoicing() throws JsonProcessingException {
+        //given
+        final Notification notification = createNotificationMock();
+        Institution institution = mockInstance(new Institution(), "setCity", "setRootParent");
+        institution.setSubUnitType("UO");
+        institution.setOrigin("IPA");
+        institution.setInstitutionType(InstitutionType.PA);
+        final Billing billing = createBillingMock();
+        notification.setInstitution(institution);
+        notification.setBilling(billing);
+        notification.setProduct("prod-io-premium");
+        notification.setState("ACTIVE");
+        OrganizationUnit organizationUnit = mockInstance(new OrganizationUnit());
+        GeographicTaxonomies proxyTaxonomy = mockInstance(new GeographicTaxonomies());
+        proxyTaxonomy.setCountry("proxyContry");
+        proxyTaxonomy.setProvinceAbbreviation("proxyProvince");
+        proxyTaxonomy.setDescription("proxyCity - COMUNE");
+        proxyTaxonomy.setIstatCode(organizationUnit.getMunicipalIstatCode());
+        when(registryProxyConnector.getUoById(any())).thenReturn(organizationUnit);
+        when(registryProxyConnector.getExtById(any())).thenReturn(proxyTaxonomy);
+        when(kafkaTemplate.send(any(ProducerRecord.class)))
+                .thenReturn(mockFuture);
+
+        doAnswer(invocationOnMock -> {
+            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
+            callback.onSuccess(mockSendResult);
+            return null;
+        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
+
+        //when
+        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
+        //then
+        assertDoesNotThrow(executable);
+        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
+        verify(acknowledgment, times(1)).acknowledge();
+        verify(registryProxyConnector, times(1)).getUoById(notification.getInstitution().getSubUnitCode());
+        verify(registryProxyConnector, times(1)).getExtById(organizationUnit.getMunicipalIstatCode());
+        verifyNoMoreInteractions(registryProxyConnector);
+        NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
+        checkNotNullFields(captured, "user");
+        checkNotNullFields(captured.getInstitution(), "rootParent");
+        assertEquals("setTaxCodeInvoicing", captured.getInstitution().getTaxCode());
+
     }
 
     @Test
@@ -244,7 +292,7 @@ class SendSapNotificationTest {
         verifyNoMoreInteractions(registryProxyConnector);
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
-        assertEquals("Sc-Contracts-Sap",producerRecordArgumentCaptor.getValue().topic());
+        assertEquals("Sc-Contracts-Sap", producerRecordArgumentCaptor.getValue().topic());
         checkNotNullFields(captured.getInstitution());
     }
 
@@ -276,7 +324,8 @@ class SendSapNotificationTest {
         //then
         assertDoesNotThrow(executable);
         ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
-        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());;
+        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
+        ;
         verify(acknowledgment, times(1)).acknowledge();
         verify(registryProxyConnector, times(1)).getAooById(institution.getSubUnitCode());
         verifyNoMoreInteractions(registryProxyConnector);
@@ -404,7 +453,7 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void isProdIoFast(){
+    void isProdIoFast() {
         //given
         final Notification notification = createNotificationMock();
         notification.setPricingPlan("FA");
@@ -423,6 +472,7 @@ class SendSapNotificationTest {
         assertDoesNotThrow(executable);
         verifyNoInteractions(kafkaTemplate);
     }
+
     @Test
     void allowedOriginsNotPresent() {
         //given
@@ -446,7 +496,7 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void originNotAllowed(){
+    void originNotAllowed() {
         //given
         service = new SendSapNotification(kafkaTemplate, notificationMapperSpy, mapper, registryProxyConnector, externalApiConnector, Set.of(InstitutionType.PA, InstitutionType.GSP), List.of("prod-pn"), Set.of(Origin.IPA));
         final Notification notification = new Notification();
@@ -503,19 +553,19 @@ class SendSapNotificationTest {
     }
 
 
-    private static Notification createNotificationMock(){
+    private static Notification createNotificationMock() {
         return mockInstance(new Notification());
     }
 
-    private static Institution createInstitutionMock(){
+    private static Institution createInstitutionMock() {
         return mockInstance(new Institution());
     }
 
-    private static Billing createBillingMock(){
+    private static Billing createBillingMock() {
         return mockInstance(new Billing());
     }
 
-    private static OnboardedProduct createOnboardedProductMock(){
+    private static OnboardedProduct createOnboardedProductMock() {
         return mockInstance(new OnboardedProduct());
     }
 }
