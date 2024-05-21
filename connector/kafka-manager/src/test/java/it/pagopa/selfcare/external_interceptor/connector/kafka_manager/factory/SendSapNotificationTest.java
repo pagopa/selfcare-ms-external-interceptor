@@ -159,53 +159,6 @@ class SendSapNotificationTest {
     }
 
     @Test
-    void sendInstitutionNotificationUOWithTaxCodeInvoicing() throws JsonProcessingException {
-        //given
-        final Notification notification = createNotificationMock();
-        Institution institution = mockInstance(new Institution(), "setCity", "setRootParent");
-        institution.setSubUnitType("UO");
-        institution.setOrigin("IPA");
-        institution.setInstitutionType(InstitutionType.PA);
-        final Billing billing = createBillingMock();
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-io-premium");
-        notification.setState("ACTIVE");
-        OrganizationUnit organizationUnit = mockInstance(new OrganizationUnit());
-        GeographicTaxonomies proxyTaxonomy = mockInstance(new GeographicTaxonomies());
-        proxyTaxonomy.setCountry("proxyContry");
-        proxyTaxonomy.setProvinceAbbreviation("proxyProvince");
-        proxyTaxonomy.setDescription("proxyCity - COMUNE");
-        proxyTaxonomy.setIstatCode(organizationUnit.getMunicipalIstatCode());
-        when(registryProxyConnector.getUoById(any())).thenReturn(organizationUnit);
-        when(registryProxyConnector.getExtById(any())).thenReturn(proxyTaxonomy);
-        when(kafkaTemplate.send(any(ProducerRecord.class)))
-                .thenReturn(mockFuture);
-
-        doAnswer(invocationOnMock -> {
-            ListenableFutureCallback callback = invocationOnMock.getArgument(0);
-            callback.onSuccess(mockSendResult);
-            return null;
-        }).when(mockFuture).addCallback(any(ListenableFutureCallback.class));
-
-        //when
-        Executable executable = () -> service.sendInstitutionNotification(notification, acknowledgment);
-        //then
-        assertDoesNotThrow(executable);
-        ArgumentCaptor<ProducerRecord<String, String>> producerRecordArgumentCaptor = ArgumentCaptor.forClass(ProducerRecord.class);
-        verify(kafkaTemplate, times(1)).send(producerRecordArgumentCaptor.capture());
-        verify(acknowledgment, times(1)).acknowledge();
-        verify(registryProxyConnector, times(1)).getUoById(notification.getInstitution().getSubUnitCode());
-        verify(registryProxyConnector, times(1)).getExtById(organizationUnit.getMunicipalIstatCode());
-        verifyNoMoreInteractions(registryProxyConnector);
-        NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
-        checkNotNullFields(captured, "user");
-        checkNotNullFields(captured.getInstitution(), "rootParent");
-        assertEquals("setTaxCodeInvoicing", captured.getInstitution().getTaxCode());
-
-    }
-
-    @Test
     void sendInstitutionNotificationUo() throws JsonProcessingException {
         //given
         final Notification notification = createNotificationMock();
@@ -248,6 +201,7 @@ class SendSapNotificationTest {
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
+        assertEquals("setTaxCodeInvoicing", captured.getInstitution().getTaxCode());
     }
 
     @Test
