@@ -248,6 +248,7 @@ class SendSapNotificationTest {
         NotificationToSend captured = mapper.readValue(producerRecordArgumentCaptor.getValue().value(), NotificationToSend.class);
         checkNotNullFields(captured, "user");
         checkNotNullFields(captured.getInstitution());
+        assertEquals("setTaxCodeInvoicing", captured.getInstitution().getTaxCode());
     }
 
     @Test
