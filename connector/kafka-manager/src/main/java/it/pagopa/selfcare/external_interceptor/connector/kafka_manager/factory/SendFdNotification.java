@@ -45,22 +45,6 @@ public class SendFdNotification extends KafkaSend {
 
 
     @Override
-    public void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException {
-        log.trace("sendInstitutionNotification start");
-        log.debug(LogUtils.CONFIDENTIAL_MARKER, "send institution notification = {}", notification);
-        if (validateProductTopic(notification.getProduct())) {
-            NotificationToSend notificationToSend = notificationMapper.createInstitutionNotification(notification);
-            notificationToSend.setType(NotificationType.ADD_INSTITUTE);
-            String institutionNotification = mapper.writeValueAsString(notificationToSend);
-            String topic = producerAllowedTopics.get().get(notification.getProduct());
-            String logSuccess = String.format("sent notification for token : %s, to FD", notification.getOnboardingTokenId());
-            String logFailure = String.format("error during notification sending for token: %s, on FD ", notification.getOnboardingTokenId());
-            sendNotification(institutionNotification, topic, logSuccess, logFailure, Optional.of(acknowledgment));
-        }
-        log.trace("sendInstitutionNotification end");
-    }
-
-    @Override
     public void sendUserNotification(UserNotification userNotification, Acknowledgment acknowledgment) throws JsonProcessingException {
         log.trace("sendUserNotification start");
         log.debug(LogUtils.CONFIDENTIAL_MARKER, "send user notification = {}", userNotification);
