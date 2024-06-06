@@ -11,9 +11,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.KafkaSendStrategyFactory;
 import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendFdNotification;
-import it.pagopa.selfcare.external_interceptor.connector.kafka_manager.factory.SendSapNotification;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.Billing;
-import it.pagopa.selfcare.external_interceptor.connector.model.institution.Institution;
 import it.pagopa.selfcare.external_interceptor.connector.model.institution.Notification;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.RelationshipState;
 import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotification;
@@ -62,8 +59,6 @@ class KafkaInterceptorTest {
     private KafkaInterceptor interceptor;
     private KafkaSendStrategyFactory sendStrategyFactory;
 
-    private SendSapNotification sapSendService;
-
     private SendFdNotification fdNotificationService;
 
     @Spy
@@ -77,9 +72,8 @@ class KafkaInterceptorTest {
     void setUp() {
         openMocks(this);
         fdNotificationService = mock(SendFdNotification.class);
-        sapSendService = mock(SendSapNotification.class);
         sendStrategyFactory = mock(KafkaSendStrategyFactory.class);
-        interceptor = new KafkaInterceptor(mapper, sendStrategyFactory, sapSendService);
+        interceptor = new KafkaInterceptor(mapper, sendStrategyFactory);
     }
     public KafkaInterceptorTest(){
         objectMapper = new ObjectMapper();
@@ -92,89 +86,6 @@ class KafkaInterceptorTest {
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.setTimeZone(TimeZone.getDefault());
-    }
-
-
-    @Test
-    void interceptInstitutionGeneral() throws JsonProcessingException {
-        //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        final Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
-        Acknowledgment acknowledgment = new Acknowledgment() {
-            @Override
-            public void acknowledge() {
-
-            }
-        };
-        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitutionGeneral(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)), acknowledgment)
-        );
-        //then
-        verify(sendStrategyFactory, times(1)).create("prod-fd");
-        ArgumentCaptor<Notification> notificationArgumentCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(fdNotificationService, times(1)).sendInstitutionNotification(notificationArgumentCaptor.capture(), eq(acknowledgment));
-        Notification capturedNotification = notificationArgumentCaptor.getValue();
-        reflectionEqualsByName(notification, capturedNotification);
-    }
-
-    @Test
-    void interceptInstitutionGeneralDifferentProduct() throws JsonProcessingException {
-        //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        final Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-io");
-        notification.setState("ACTIVE");
-        Acknowledgment acknowledgment = new Acknowledgment() {
-            @Override
-            public void acknowledge() {
-
-            }
-        };
-        when(sendStrategyFactory.create(any())).thenReturn(null);
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitutionGeneral(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)), acknowledgment)
-        );
-        //then
-        verify(sendStrategyFactory, times(1)).create("prod-io");
-        verifyNoInteractions(fdNotificationService);
-    }
-
-    @Test
-    void interceptInstitutionGeneral_exception() throws IOException {
-        //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        final Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
-        String notificationString = objectMapper.writeValueAsString(notification);
-        String newPayload = notificationString.replace("PA", "TEST");
-        Acknowledgment acknowledgment = new Acknowledgment() {
-            @Override
-            public void acknowledge() {
-
-            }
-        };
-        when(sendStrategyFactory.create(any())).thenReturn(fdNotificationService);
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitutionGeneral(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", newPayload), acknowledgment)
-        );
-        //then
-        verifyNoInteractions( fdNotificationService, sendStrategyFactory);
     }
 
     @Test
@@ -268,59 +179,6 @@ class KafkaInterceptorTest {
         //then
         verify(sendStrategyFactory, times(1)).create("prod-fd");
         verifyNoInteractions(fdNotificationService);
-    }
-
-    @Test
-    void interceptInstitutionSap() throws JsonProcessingException {
-        //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        final Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
-        Acknowledgment acknowledgment = new Acknowledgment() {
-            @Override
-            public void acknowledge() {
-
-            }
-        };
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitutionSap(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", objectMapper.writeValueAsString(notification)), acknowledgment)
-        );
-        //then
-        ArgumentCaptor<Notification> notificationArgumentCaptor = ArgumentCaptor.forClass(Notification.class);
-        verify(sapSendService, times(1)).sendInstitutionNotification(notificationArgumentCaptor.capture(), eq(acknowledgment));
-        Notification capturedNotification = notificationArgumentCaptor.getValue();
-        reflectionEqualsByName(notification, capturedNotification);
-    }
-
-    @Test
-    void interceptInstitutionSap_exception() throws IOException {
-        //given
-        final Notification notification = mockInstance(new Notification());
-        Institution institution = mockInstance(new Institution());
-        final Billing billing = mockInstance(new Billing());
-        notification.setInstitution(institution);
-        notification.setBilling(billing);
-        notification.setProduct("prod-fd");
-        notification.setState("ACTIVE");
-        String notificationString = objectMapper.writeValueAsString(notification);
-        String newPayload = notificationString.replace("PA", "TEST");
-        Acknowledgment acknowledgment = new Acknowledgment() {
-            @Override
-            public void acknowledge() {
-
-            }
-        };
-        //when
-        assertDoesNotThrow(
-                () -> interceptor.interceptInstitutionSap(new ConsumerRecord<>("sc-Contracts", 0, 0, "notification", newPayload), acknowledgment)
-        );
-        //then
-        verifyNoInteractions( fdNotificationService, sendStrategyFactory);
     }
 
 

@@ -1,4 +1,6 @@
-env_short = "u"
+env_short             = "u"
+suffix_increment = "-001"
+cae_name         = "cae-001"
 
 tags = {
   CreatedBy   = "Terraform"
@@ -57,15 +59,15 @@ app_settings = [
   },
   {
     name  = "USERVICE_PARTY_REGISTRY_PROXY_URL"
-    value = "https://selc-u-party-reg-proxy-ca.calmsky-143987c1.westeurope.azurecontainerapps.io"
+    value = "https://selc-u-party-reg-proxy-ca.proudglacier-20652b81.westeurope.azurecontainerapps.io"
   },
   {
     name  = "EXTERNAL_API_BACKEND_URL"
-    value = "https://selc-u-external-api-backend-ca.calmsky-143987c1.westeurope.azurecontainerapps.io"
+    value = "https://selc-d-ext-api-backend-ca.proudglacier-20652b81.westeurope.azurecontainerapps.io"
   },
   {
     name  = "MS_CORE_URL"
-    value = "https://selc-u-ms-core-ca.calmsky-143987c1.westeurope.azurecontainerapps.io"
+    value = "https://selc-u-ms-core-ca.proudglacier-20652b81.westeurope.azurecontainerapps.io"
   },
   {
     name  = "PROD_FD_URL"

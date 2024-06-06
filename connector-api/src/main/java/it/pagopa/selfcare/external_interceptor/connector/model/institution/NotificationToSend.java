@@ -21,7 +21,7 @@ public class NotificationToSend {
     private InstitutionToSend institution;
     private String fileName;
     private String contentType;
-    private Billing billing;
+    private BillingToSend billing;
     private UserToSend user;
 
 }

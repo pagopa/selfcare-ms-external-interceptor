@@ -2,7 +2,6 @@
 
         import com.fasterxml.jackson.databind.ObjectMapper;
         import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
-        import it.pagopa.selfcare.external_interceptor.core.SchedulerService;
         import lombok.extern.slf4j.Slf4j;
         import org.junit.jupiter.api.Test;
         import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +40,6 @@ class SwaggerConfigTest {
 
     @MockBean
     private InterceptorService interceptorService;
-
-    @MockBean
-    private SchedulerService schedulerService;
 
     @Autowired
     WebApplicationContext context;

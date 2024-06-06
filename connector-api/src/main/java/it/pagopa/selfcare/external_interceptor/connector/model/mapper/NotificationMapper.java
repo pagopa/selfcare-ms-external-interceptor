@@ -17,12 +17,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-@Mapper(componentModel = "spring", imports = {UUID.class, RelationshipState.class})
+@Mapper(componentModel = "spring", imports = {UUID.class, RelationshipState.class })
 public interface NotificationMapper {
 
     @Mapping(target = "id",  expression = "java(UUID.randomUUID().toString())")
     @Mapping(target = "user", source = "inbound.user", qualifiedByName = "toUserToSend")
     @Mapping(target = "product", source = "productId")
+    @Mapping(target = "createdAt", expression = "java(inbound.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))")
+    @Mapping(target = "updatedAt", expression = "java(inbound.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC))")
     NotificationToSend createUserNotification(UserNotification inbound);
 
 
@@ -32,6 +34,7 @@ public interface NotificationMapper {
     @Mapping(target = "institution.fileName", source = "fileName")
     @Mapping(target = "institution.contentType", source = "contentType")
     NotificationToSend createInstitutionNotification(Notification inbound);
+
 
 
     @Named("toUserToSend")

@@ -6,7 +6,5 @@ import it.pagopa.selfcare.external_interceptor.connector.model.user.UserNotifica
 import org.springframework.kafka.support.Acknowledgment;
 
 public interface KafkaSendService {
-
-    void sendInstitutionNotification(Notification notification, Acknowledgment acknowledgment) throws JsonProcessingException;
     void sendUserNotification(UserNotification userNotification, Acknowledgment acknowledgment) throws JsonProcessingException;
 }
