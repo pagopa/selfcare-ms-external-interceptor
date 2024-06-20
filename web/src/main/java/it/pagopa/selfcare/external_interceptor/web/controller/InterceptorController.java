@@ -6,13 +6,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.tags.Tags;
 import it.pagopa.selfcare.external_interceptor.connector.model.interceptor.AckStatus;
-import it.pagopa.selfcare.external_interceptor.core.InterceptorService;
 import it.pagopa.selfcare.external_interceptor.web.model.AckPayloadRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,15 +18,6 @@ import javax.validation.Valid;
 @Api(tags = "interceptor")
 @Slf4j
 public class InterceptorController {
-
-    private final InterceptorService interceptorService;
-    @Value("${prod-fd.bypass-checkOrganization}")
-    private boolean byPassCheckOrganization;
-
-    @Autowired
-    public InterceptorController(InterceptorService interceptorService) {
-        this.interceptorService = interceptorService;
-    }
 
     @Tags({@Tag(name = "external-v2"), @Tag(name = "interceptor")})
     @ApiOperation(value = "", notes = "${swagger.external-interceptor.acknowledgment.api.messageAcknowledgment}")
@@ -48,22 +35,5 @@ public class InterceptorController {
             log.error("[ACKNOWLEDGMENT ERROR] - record with {} id gave {}, it wasn't processed correctly by {}, reason = {}", messageId, status, productId, payload.getMessage());
         }
         log.trace("messageAcknowledgment end");
-    }
-
-    @ApiOperation(value = "", notes = "${swagger.external-interceptor.checkOrganization.api}")
-    @RequestMapping(method = {RequestMethod.HEAD}, value = "/organizations/{productId}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> checkOrganization(@ApiParam("${swagger.external-interceptor.product.model.id}") @PathVariable("productId") String productId,
-                                                  @ApiParam("${swagger.external-interceptor.institution.model.fiscalCode}") @RequestParam("fiscalCode") String fiscalCode,
-                                                  @ApiParam("${swagger.external-interceptor.institution.model.vatNumber}") @RequestParam("vatNumber") String vatNumber) {
-        log.trace("checkOrganization start");
-        log.debug("checkOrganization productId = {}, fiscalCode = {}, vatNumber = {}", productId, fiscalCode, vatNumber);
-        boolean alreadyRegistered = byPassCheckOrganization?false:interceptorService.checkOrganization(fiscalCode, vatNumber);
-        log.debug("checkOrganization result = {}", alreadyRegistered);
-        log.trace("checkOrganization end");
-        if (alreadyRegistered)
-            return ResponseEntity.status(HttpStatus.OK).build();
-        else
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

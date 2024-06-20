@@ -9,7 +9,7 @@ import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @Import(RestClientBaseConfig.class)
-@EnableFeignClients(clients = {ExternalApiBackEndRestClient.class, FDRestClient.class, FDTokenRestClient.class, PartyRegistryProxyRestClient.class, InternalApiRestClient.class, MsCoreRestClient.class})
+@EnableFeignClients(clients = {ExternalApiBackEndRestClient.class, PartyRegistryProxyRestClient.class, InternalApiRestClient.class, MsCoreRestClient.class})
 @PropertySource("classpath:config/feign-client.properties")
 public class FeignClientConfig {
 }

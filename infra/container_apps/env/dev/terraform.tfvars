@@ -66,10 +66,6 @@ app_settings = [
     value = "https://selc-d-ms-core-ca.politewater-9af33050.westeurope.azurecontainerapps.io"
   },
   {
-    name  = "PROD_FD_URL"
-    value = "https://fid00001fe.siachain.sv.sia.eu:30008"
-  },
-  {
     name  = "KAFKA_BROKER"
     value = "selc-d-eventhub-ns.servicebus.windows.net:9093"
   },
@@ -98,9 +94,6 @@ app_settings = [
 secrets_names = {
   "APPLICATIONINSIGHTS_CONNECTION_STRING"        = "appinsights-connection-string"
   "SELFCARE_APIM_INTERNAL_API_KEY"               = "onboarding-interceptor-apim-internal"
-  "FD_TOKEN_GRANT_TYPE"                          = "prod-fd-grant-type"
-  "FD_TOKEN_CLIENT_ID"                           = "prod-fd-client-id"
-  "FD_TOKEN_CLIENT_SECRET"                       = "prod-fd-client-secret"
   "MONGODB_CONNECTION_URI"                       = "mongodb-connection-string"
   "KAFKA_CONTRACTS_SELFCARE_RO_SASL_JAAS_CONFIG" = "eventhub-sc-contracts-interceptor-connection-string-lc"
   "KAFKA_USERS_SELFCARE_RO_SASL_JAAS_CONFIG"     = "eventhub-sc-users-external-interceptor-connection-string-lc"
